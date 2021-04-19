@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$" />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="pdfbox-app-2.0.22" level="project" />
+    <orderEntry type="library" name="jfreechart-1.5.2" level="project" />
+    <orderEntry type="library" name="jcommon-1.0.23" level="project" />
+  </component>
+</module>
