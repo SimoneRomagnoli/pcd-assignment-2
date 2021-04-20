@@ -18,9 +18,9 @@ public class Master extends Thread {
 
     public void run(){
         final long start = System.currentTimeMillis();
-        while (!this.model.getState().isFinished()) {
+        while (!this.model.isFinished()) {
             try {
-                if (!this.model.getState().isStopped()) {
+                if (!this.model.isStopped()) {
                     model.update();
                 }
                 Thread.sleep(50);

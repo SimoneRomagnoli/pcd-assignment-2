@@ -1,6 +1,9 @@
 package model;
 
 import gui.ModelObserver;
+import model.task.FilterCount;
+import model.task.Split;
+import model.task.Strip;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
 
@@ -9,6 +12,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -21,24 +28,25 @@ public class Model {
     private final Queue<File> documents;
     private final List<String> ignoredWords;
     private int limitWords;
+    private boolean stopped;
 
-    List<Worker> workers;
+    private ExecutorService executor;
+    private final List<Future<String>> stripResults;
+    private final List<Future<String[]>> splitResults;
 
-    private final PdfMonitor pdfMonitor;
-    private final StateMonitor stateMonitor;
     private final ElaboratedWordsMonitor wordsMonitor;
-
     private final OccurrencesMonitor occurrencesMonitor;
 
     public Model() {
+        this.stopped = true;
         this.observers = new ArrayList<>();
         this.ignoredWords = new ArrayList<>();
-        this.pdfMonitor = new PdfMonitor();
         this.occurrencesMonitor = new OccurrencesMonitor();
-        this.stateMonitor = new StateMonitor();
         this.wordsMonitor = new ElaboratedWordsMonitor();
-        this.workers = new ArrayList<>();
         this.documents = new ArrayDeque<>();
+
+        this.stripResults = new LinkedList<>();
+        this.splitResults = new LinkedList<>();
     }
 
     /**
@@ -47,7 +55,7 @@ public class Model {
      * and their work.
      * @throws InterruptedException
      */
-    public void update() throws InterruptedException, IOException {
+    public void update() throws IOException, ExecutionException, InterruptedException {
         if (!this.documents.isEmpty()){
             File f = documents.poll();
             PDDocument doc = PDDocument.load(f);
@@ -55,14 +63,32 @@ public class Model {
             if (!ap.canExtractContent()) {
                 throw new IOException("You do not have permission to extract text");
             }
-            System.out.println("Processing file: " + f.getName());
-
-            this.pdfMonitor.setDocuments(doc, this.documents.isEmpty());
-        } else {
-            for(Worker w : workers){
-                w.join();
+            try {
+                Future<String> stripResult = executor.submit(new Strip(doc));
+                stripResults.add(stripResult);
+                System.out.println("Submitted file: " + f.getName());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
+
+        for(Future<String> res: stripResults) {
+            if(res.isDone()) {
+                Future<String[]> splitResult = executor.submit(new Split(res.get()));
+                splitResults.add(splitResult);
+                stripResults.remove(res);
+            }
+        }
+
+        for(Future<String[]> res:splitResults) {
+            if(res.isDone()) {
+                this.wordsMonitor.add(res.get().length);
+                executor.submit(new FilterCount(res.get(), this.ignoredWords, this.occurrencesMonitor));
+                splitResults.remove(res);
+            }
+        }
+
+        notifyObservers();
     }
 
     /**
@@ -83,21 +109,17 @@ public class Model {
 
     /**
      * Method called by the controller to create
-     * workers knowing the amount of available processors, cpu usage and number of documents.
+     * thread pool knowing the amount of available processors, cpu usage and number of documents.
      *
      * @param n
      * @throws IOException
      */
-    public void createWorkersUpTo(final int n) throws IOException {
-        final int numberOfWorkers = Math.min(n, documents.size());
-        System.out.println("Number of workers: "+numberOfWorkers);
-        if(this.workers.isEmpty()) {
-            for (int i = 0; i < numberOfWorkers; i++) {
-                workers.add(new Worker(this, this.pdfMonitor, this.occurrencesMonitor, this.stateMonitor, this.wordsMonitor, this.ignoredWords));
-            }
-            this.workers.forEach(Worker::start);
-        }
+    public void createThreadPoolUpTo(final int n) {
+        this.executor = Executors.newFixedThreadPool(Math.min(n, documents.size()));
+
     }
+
+    public void addObserver(ModelObserver obs){ observers.add(obs); }
 
     /**
      * Notify the GUI sending the current values for most used words
@@ -119,18 +141,19 @@ public class Model {
         }
     }
 
-    public StateMonitor getState() {
-        return this.stateMonitor;
-    }
-
     public void start() {
-        this.stateMonitor.start();
+        this.stopped = false;
     }
 
     public void stop() {
-        this.stateMonitor.stop();
+        this.stopped = true;
     }
 
-    public void addObserver(ModelObserver obs){ observers.add(obs); }
+    public boolean isStopped() {
+        return this.isStopped();
+    }
 
+    public boolean isFinished() {
+        return this.documents.isEmpty() && this.splitResults.isEmpty() && this.stripResults.isEmpty();
+    }
 }
