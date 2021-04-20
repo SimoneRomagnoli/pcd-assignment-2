@@ -39,7 +39,7 @@ public class Controller {
             this.master = new Master(this.model, view);
             this.model.setArgs(pdfDirectoryName, ignoredWordsFileName, limitWords);
             this.master.start();
-            this.model.createWorkersUpTo(N_THREADS);
+            this.model.createThreadPoolUpTo(N_THREADS);
             this.firstStart = false;
         }
         this.model.start();
