@@ -19,6 +19,8 @@ public class Strip implements Callable<String> {
         final PDFTextStripper stripper = new PDFTextStripper();
         stripper.setStartPage(FIRST_PAGE);
         stripper.setEndPage(this.document.getNumberOfPages());
-        return stripper.getText(this.document);
+        final String text = stripper.getText(this.document);
+        this.document.close();
+        return text;
     }
 }

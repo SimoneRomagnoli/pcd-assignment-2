@@ -72,7 +72,10 @@ public class Model {
             }
         }
 
-        for(Future<String> res: stripResults) {
+
+        final Iterator<Future<String>> stripIterator = stripResults.iterator();
+        while(stripIterator.hasNext()) {
+            final Future<String> res = stripIterator.next();
             if(res.isDone()) {
                 Future<String[]> splitResult = executor.submit(new Split(res.get()));
                 splitResults.add(splitResult);
@@ -80,7 +83,9 @@ public class Model {
             }
         }
 
-        for(Future<String[]> res:splitResults) {
+        final Iterator<Future<String[]>> splitIterator = splitResults.iterator();
+        while(splitIterator.hasNext()) {
+            final Future<String[]> res = splitIterator.next();
             if(res.isDone()) {
                 this.wordsMonitor.add(res.get().length);
                 executor.submit(new FilterCount(res.get(), this.ignoredWords, this.occurrencesMonitor));
@@ -150,7 +155,7 @@ public class Model {
     }
 
     public boolean isStopped() {
-        return this.isStopped();
+        return this.stopped;
     }
 
     public boolean isFinished() {
