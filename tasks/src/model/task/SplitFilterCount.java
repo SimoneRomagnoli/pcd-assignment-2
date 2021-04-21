@@ -1,5 +1,6 @@
 package model.task;
 
+import model.ElaboratedWordsMonitor;
 import model.OccurrencesMonitor;
 
 import java.util.Arrays;
@@ -9,22 +10,30 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-public class FilterCount implements Callable<Void> {
+public class SplitFilterCount implements Callable<Void> {
 
-    private final String[] text;
+    private static final String REGEX = "[^a-zA-Z0-9]";
+
+    private final String text;
     private final List<String> ignoredWords;
-    private final OccurrencesMonitor monitor;
+    private final OccurrencesMonitor occurrencesMonitor;
+    private final ElaboratedWordsMonitor wordsMonitor;
 
-    public FilterCount(String[] text, List<String> ignoredWords, OccurrencesMonitor monitor) {
+    public SplitFilterCount(String text, List<String> ignoredWords, OccurrencesMonitor occurrencesMonitor, ElaboratedWordsMonitor wordsMonitor) {
         this.text = text;
         this.ignoredWords = ignoredWords;
-        this.monitor = monitor;
+        this.occurrencesMonitor = occurrencesMonitor;
+        this.wordsMonitor = wordsMonitor;
     }
 
     @Override
     public Void call() {
-        this.monitor.writeOccurrence(count(filter(this.text)));
+        this.occurrencesMonitor.writeOccurrence(count(filter(split(this.text))));
         return null;
+    }
+
+    private String[] split(String page) {
+        return page.split(REGEX);
     }
 
     private List<String> filter(String[] splittedText) {

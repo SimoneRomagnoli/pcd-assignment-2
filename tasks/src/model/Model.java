@@ -1,8 +1,7 @@
 package model;
 
 import controller.Flag;
-import model.task.FilterCount;
-import model.task.Split;
+import model.task.SplitFilterCount;
 import model.task.Strip;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
@@ -11,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -27,7 +25,7 @@ public class Model extends Thread {
 
     private ExecutorService executor;
     private final List<Future<String>> stripResults;
-    private final List<Future<String[]>> splitResults;
+    private final List<Future<Void>> results;
 
     private Flag flag;
     private ElaboratedWordsMonitor wordsMonitor;
@@ -37,9 +35,8 @@ public class Model extends Thread {
         this.ignoredWords = new ArrayList<>();
         this.flag = flag;
         this.documents = new ArrayDeque<>();
-
         this.stripResults = new LinkedList<>();
-        this.splitResults = new LinkedList<>();
+        this.results = new LinkedList<>();
     }
 
     /**
@@ -47,55 +44,41 @@ public class Model extends Thread {
      * starts the main tasks via Executors.
      */
     public void run() {
-        if (!this.documents.isEmpty()){
-            File f = documents.poll();
-            PDDocument doc = null;
+        //Execute Strip tasks
+        while(!this.documents.isEmpty() && !this.flag.isSet()) {
             try {
-                doc = PDDocument.load(f);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            AccessPermission ap = doc.getCurrentAccessPermission();
-            if (!ap.canExtractContent()) {
-                try {
+                File f = documents.poll();
+                PDDocument doc = PDDocument.load(f);
+                AccessPermission ap = doc.getCurrentAccessPermission();
+                if (!ap.canExtractContent()) {
                     throw new IOException("You do not have permission to extract text");
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } else {
+                    Future<String> stripResult = executor.submit(new Strip(doc));
+                    stripResults.add(stripResult);
+                    System.out.println("Submitted file: " + f.getName());
                 }
-            }
-            try {
-                Future<String> stripResult = executor.submit(new Strip(doc));
-                stripResults.add(stripResult);
-                System.out.println("Submitted file: " + f.getName());
-            } catch (Exception e) {
+            } catch(Exception e) {
                 e.printStackTrace();
             }
         }
 
-        try {
+        //Execute split, filter, count tasks
+        final Iterator<Future<String>> stripIterator = stripResults.iterator();
+        while (stripIterator.hasNext()) {
+            try {
 
-            final Iterator<Future<String>> stripIterator = stripResults.iterator();
-            while (stripIterator.hasNext()) {
-                final Future<String> res = stripIterator.next();
-                if (res.isDone()) {
-                    Future<String[]> splitResult = null;
-                    splitResult = executor.submit(new Split(res.get()));
-                    splitResults.add(splitResult);
+                final Future<String> future = stripIterator.next();
+                if(future.isCancelled()) {
+                    this.join();
+                }
+                if (future.isDone()) {
+                    Future<Void> result = executor.submit(new SplitFilterCount(future.get(), this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
+                    results.add(result);
                     stripIterator.remove();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            final Iterator<Future<String[]>> splitIterator = splitResults.iterator();
-            while (splitIterator.hasNext()) {
-                final Future<String[]> res = splitIterator.next();
-                if (res.isDone()) {
-                    this.wordsMonitor.add(res.get().length);
-                    executor.submit(new FilterCount(res.get(), this.ignoredWords, this.occurrencesMonitor));
-                    splitIterator.remove();
-                }
-            }
-        }  catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
         }
     }
 
@@ -128,5 +111,14 @@ public class Model extends Thread {
      */
     public void createThreadPoolUpTo(final int n) {
         this.executor = Executors.newFixedThreadPool(Math.min(n, documents.size()));
+    }
+
+    public void cancelAll() {
+        for(Future<String> f:stripResults) {
+            f.cancel(true);
+        }
+        for(Future<Void> f:results) {
+            f.cancel(true);
+        }
     }
 }

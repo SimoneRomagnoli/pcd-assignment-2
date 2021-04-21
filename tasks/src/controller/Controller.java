@@ -34,6 +34,16 @@ public class Controller implements InputListener {
 		this.model.setArgs(dir, wordsFile, limitWords);
 		this.model.createThreadPoolUpTo(N_THREADS);
 		this.model.start();
+		new Thread(() -> {
+			while(!stopFlag.isSet()) {
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			this.model.cancelAll();
+		});
 	}
 
 	public synchronized void stopped() {
