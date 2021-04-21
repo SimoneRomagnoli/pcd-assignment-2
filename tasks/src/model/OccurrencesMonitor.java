@@ -2,15 +2,18 @@ package model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Monitor that keeps the count of occurrences of words.
  */
 public class OccurrencesMonitor {
 
+    private final int limit;
     private Map<String, Integer> occurrences;
 
-    public OccurrencesMonitor() {
+    public OccurrencesMonitor(final int limitWords) {
+        this.limit = limitWords;
         this.occurrences = new HashMap<>();
     }
 
@@ -25,6 +28,11 @@ public class OccurrencesMonitor {
     }
 
     public synchronized Map<String, Integer> getOccurrences() {
-        return this.occurrences;
+        return this.occurrences
+                .keySet()
+                .stream()
+                .sorted((a, b) -> occurrences.get(b) - occurrences.get(a))
+                .limit(this.limit)
+                .collect(Collectors.toMap(k -> k, occurrences::get));
     }
 }

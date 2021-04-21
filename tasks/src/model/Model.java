@@ -1,6 +1,6 @@
 package model;
 
-import gui.ModelObserver;
+import controller.Flag;
 import model.task.FilterCount;
 import model.task.Split;
 import model.task.Strip;
@@ -10,39 +10,32 @@ import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 /**
  * Class representing the model of the program:
  * here is nested the entire logic of the program.
  */
-public class Model {
+public class Model extends Thread {
 
-    private final List<ModelObserver> observers;
     private final Queue<File> documents;
     private final List<String> ignoredWords;
-    private int limitWords;
-    private boolean stopped;
 
     private ExecutorService executor;
     private final List<Future<String>> stripResults;
     private final List<Future<String[]>> splitResults;
 
-    private final ElaboratedWordsMonitor wordsMonitor;
-    private final OccurrencesMonitor occurrencesMonitor;
+    private Flag flag;
+    private ElaboratedWordsMonitor wordsMonitor;
+    private OccurrencesMonitor occurrencesMonitor;
 
-    public Model() {
-        this.stopped = true;
-        this.observers = new ArrayList<>();
+    public Model(Flag flag) {
         this.ignoredWords = new ArrayList<>();
-        this.occurrencesMonitor = new OccurrencesMonitor();
-        this.wordsMonitor = new ElaboratedWordsMonitor();
+        this.flag = flag;
         this.documents = new ArrayDeque<>();
 
         this.stripResults = new LinkedList<>();
@@ -50,18 +43,25 @@ public class Model {
     }
 
     /**
-     * Method called only by the master thread:
-     * it handles the monitors in order to manage the workers
-     * and their work.
-     * @throws InterruptedException
+     * Method called at the beginning of computation:
+     * starts the main tasks via Executors.
      */
-    public void update() throws IOException, ExecutionException, InterruptedException {
+    public void run() {
         if (!this.documents.isEmpty()){
             File f = documents.poll();
-            PDDocument doc = PDDocument.load(f);
+            PDDocument doc = null;
+            try {
+                doc = PDDocument.load(f);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             AccessPermission ap = doc.getCurrentAccessPermission();
             if (!ap.canExtractContent()) {
-                throw new IOException("You do not have permission to extract text");
+                try {
+                    throw new IOException("You do not have permission to extract text");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
             try {
                 Future<String> stripResult = executor.submit(new Strip(doc));
@@ -72,44 +72,51 @@ public class Model {
             }
         }
 
+        try {
 
-        final Iterator<Future<String>> stripIterator = stripResults.iterator();
-        while(stripIterator.hasNext()) {
-            final Future<String> res = stripIterator.next();
-            if(res.isDone()) {
-                Future<String[]> splitResult = executor.submit(new Split(res.get()));
-                splitResults.add(splitResult);
-                stripResults.remove(res);
+            final Iterator<Future<String>> stripIterator = stripResults.iterator();
+            while (stripIterator.hasNext()) {
+                final Future<String> res = stripIterator.next();
+                if (res.isDone()) {
+                    Future<String[]> splitResult = null;
+                    splitResult = executor.submit(new Split(res.get()));
+                    splitResults.add(splitResult);
+                    stripIterator.remove();
+                }
             }
-        }
 
-        final Iterator<Future<String[]>> splitIterator = splitResults.iterator();
-        while(splitIterator.hasNext()) {
-            final Future<String[]> res = splitIterator.next();
-            if(res.isDone()) {
-                this.wordsMonitor.add(res.get().length);
-                executor.submit(new FilterCount(res.get(), this.ignoredWords, this.occurrencesMonitor));
-                splitResults.remove(res);
+            final Iterator<Future<String[]>> splitIterator = splitResults.iterator();
+            while (splitIterator.hasNext()) {
+                final Future<String[]> res = splitIterator.next();
+                if (res.isDone()) {
+                    this.wordsMonitor.add(res.get().length);
+                    executor.submit(new FilterCount(res.get(), this.ignoredWords, this.occurrencesMonitor));
+                    splitIterator.remove();
+                }
             }
+        }  catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
-
-        notifyObservers();
     }
 
     /**
      * Setting main arguments of the program
      * when the computation starts.
      *
-     * @param pdfDirectoryName
-     * @param ignoredWordsFileName
+     * @param pdfDirectory
+     * @param ignoredWordsFile
      * @param limitWords
      * @throws IOException
      */
-    public void setArgs(final String pdfDirectoryName, final String ignoredWordsFileName, final String limitWords) throws IOException {
-        File pdfDirectory = new File(pdfDirectoryName);
-        this.documents.addAll(Arrays.asList(Objects.requireNonNull(pdfDirectory.listFiles())));
-        this.ignoredWords.addAll(Files.readAllLines(Path.of(ignoredWordsFileName)));
-        this.limitWords = Integer.parseInt(limitWords);
+    public void setArgs(final File pdfDirectory, final File ignoredWordsFile, final int limitWords) {
+        try {
+            this.documents.addAll(Arrays.asList(Objects.requireNonNull(pdfDirectory.listFiles())));
+            this.ignoredWords.addAll(Files.readAllLines(ignoredWordsFile.toPath()));
+            this.occurrencesMonitor = new OccurrencesMonitor(limitWords);
+            this.wordsMonitor = new ElaboratedWordsMonitor();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -121,44 +128,5 @@ public class Model {
      */
     public void createThreadPoolUpTo(final int n) {
         this.executor = Executors.newFixedThreadPool(Math.min(n, documents.size()));
-
-    }
-
-    public void addObserver(ModelObserver obs){ observers.add(obs); }
-
-    /**
-     * Notify the GUI sending the current values for most used words
-     * and number of elaborated words
-     */
-    public void notifyObservers() {
-        for (ModelObserver obs: observers) {
-            Map<String, Integer> occurrences = this.occurrencesMonitor.getOccurrences();
-            obs.modelUpdated(this.wordsMonitor.getElaboratedWords(),
-                    occurrences.isEmpty()
-                            ? Optional.empty()
-                            : Optional.of(occurrences
-                            .keySet()
-                            .stream()
-                            .sorted((a, b) -> occurrences.get(b) - occurrences.get(a))
-                            .limit(this.limitWords)
-                            .collect(Collectors.toMap(k -> k, occurrences::get))
-                    ));
-        }
-    }
-
-    public void start() {
-        this.stopped = false;
-    }
-
-    public void stop() {
-        this.stopped = true;
-    }
-
-    public boolean isStopped() {
-        return this.stopped;
-    }
-
-    public boolean isFinished() {
-        return this.documents.isEmpty() && this.splitResults.isEmpty() && this.stripResults.isEmpty();
     }
 }
