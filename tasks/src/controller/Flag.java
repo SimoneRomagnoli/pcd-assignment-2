@@ -1,4 +1,4 @@
-package sol;
+package controller;
 
 public class Flag {
 

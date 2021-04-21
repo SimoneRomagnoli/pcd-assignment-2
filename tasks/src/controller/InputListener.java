@@ -1,10 +1,10 @@
-package sol;
+package controller;
 
 import java.io.File;
 
 public interface InputListener {
 
-	void started(File dir, File wordsFile, int nMostFreqWords);
+	void started(File dir, File wordsFile, int limitWords);
 	
 	void stopped();
 }
