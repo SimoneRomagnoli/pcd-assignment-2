@@ -1,24 +1,17 @@
-package sol;
+import controller.Controller;
+import view.View;
 
 /**
- * 
- * Assignment #01 - Parte 2
- * 
- * doc:
- * https://docs.google.com/document/d/1v0XlJIEjCPZr87PIBaqROFcco8oNO-se_HO3GbM0gqU/edit?usp=sharing
- * 
- * @author aricci
- *
- */
+* Main of the program:
+* it is structured with an MVC architecture.
+*/
 public class Main {
 	public static void main(String[] args) {
 		try {
-			
 			View view = new View();
-			
 			Controller controller = new Controller(view);
+
 			view.addListener(controller);
-			
 			view.display();						
 		} catch (Exception ex) {
 			ex.printStackTrace();
