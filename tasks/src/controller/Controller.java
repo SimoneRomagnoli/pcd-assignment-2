@@ -41,7 +41,7 @@ public class Controller implements InputListener {
 		new Thread(() -> {
 			while(!stopFlag.isSet()) {
 				try {
-					Thread.sleep(10);
+					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
