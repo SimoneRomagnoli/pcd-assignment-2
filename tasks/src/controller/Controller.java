@@ -2,6 +2,7 @@ package controller;
 
 import model.Model;
 import view.View;
+import view.Viewer;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,20 +21,23 @@ public class Controller implements InputListener {
 	public static final int N_THREADS =  (int)(N_CPU * U_CPU * (1 + WAIT_COMPUTE_RATIO));
 
 	private Flag stopFlag;
-	private View view;
+	private Viewer viewer;
 	private Model model;
 	
 	public Controller(View view){
 		this.stopFlag = new Flag();
-		this.view = view;
+		this.viewer = new Viewer(view, this.stopFlag);
 	}
 	
 	public synchronized void started(File dir, File wordsFile, int limitWords) {
 		stopFlag.reset();
 		this.model = new Model(this.stopFlag);
 		this.model.setArgs(dir, wordsFile, limitWords);
+		this.viewer.setOccurrencesMonitor(this.model.getOccurrencesMonitor());
+		this.viewer.setElaboratedWordMonitor(this.model.getElaboratedWordsMonitor());
 		this.model.createThreadPoolUpTo(N_THREADS);
 		this.model.start();
+		this.viewer.start();
 		new Thread(() -> {
 			while(!stopFlag.isSet()) {
 				try {

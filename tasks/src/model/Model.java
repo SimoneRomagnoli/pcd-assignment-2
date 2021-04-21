@@ -63,23 +63,30 @@ public class Model extends Thread {
         }
 
         //Execute split, filter, count tasks
-        final Iterator<Future<String>> stripIterator = stripResults.iterator();
-        while (stripIterator.hasNext()) {
-            try {
+        while(!stripResults.isEmpty()) {
+            final Iterator<Future<String>> stripIterator = stripResults.iterator();
+            while (stripIterator.hasNext()) {
+                try {
 
-                final Future<String> future = stripIterator.next();
-                if(future.isCancelled()) {
-                    this.join();
+                    final Future<String> future = stripIterator.next();
+                    if (future.isCancelled()) {
+                        this.join();
+                    }
+                    if (future.isDone()) {
+                        System.out.println("Processing a file");
+                        Future<Void> result = executor.submit(new SplitFilterCount(future.get(), this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
+                        results.add(result);
+                        stripIterator.remove();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                if (future.isDone()) {
-                    Future<Void> result = executor.submit(new SplitFilterCount(future.get(), this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
-                    results.add(result);
-                    stripIterator.remove();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
+
+        //Terminate
+        this.flag.set();
+        System.out.println("End");
     }
 
     /**
@@ -120,5 +127,13 @@ public class Model extends Thread {
         for(Future<Void> f:results) {
             f.cancel(true);
         }
+    }
+
+    public OccurrencesMonitor getOccurrencesMonitor() {
+        return this.occurrencesMonitor;
+    }
+
+    public ElaboratedWordsMonitor getElaboratedWordsMonitor() {
+        return this.wordsMonitor;
     }
 }

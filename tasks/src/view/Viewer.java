@@ -11,10 +11,8 @@ public class Viewer extends Thread {
 	private View view;
 	private Flag done;
 	
-	public Viewer(OccurrencesMonitor occurrencesMonitor, ElaboratedWordsMonitor wordsMonitor, View view, Flag done) {
+	public Viewer(View view, Flag done) {
 		super("viewer");
-		this.occurrencesMonitor = occurrencesMonitor;
-		this.wordsMonitor = wordsMonitor;
 		this.view = view;
 		this.done = done;
 	}
@@ -23,11 +21,20 @@ public class Viewer extends Thread {
 		while (!done.isSet()) {
 			try {
 				view.update(this.wordsMonitor.getElaboratedWords(), this.occurrencesMonitor.getOccurrences());
-				Thread.sleep(10);
+				Thread.sleep(100);
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}
 		}
 		view.update(this.wordsMonitor.getElaboratedWords(), this.occurrencesMonitor.getOccurrences());
+		this.view.done();
+	}
+
+	public void setOccurrencesMonitor(OccurrencesMonitor monitor) {
+		this.occurrencesMonitor = monitor;
+	}
+
+	public void setElaboratedWordMonitor(ElaboratedWordsMonitor monitor) {
+		this.wordsMonitor = monitor;
 	}
 }
