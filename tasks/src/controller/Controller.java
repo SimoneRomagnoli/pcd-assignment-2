@@ -20,13 +20,14 @@ public class Controller implements InputListener {
 	public static final double WAIT_COMPUTE_RATIO = 0.85;
 	public static final int N_THREADS =  (int)(N_CPU * U_CPU * (1 + WAIT_COMPUTE_RATIO));
 
+	private View view;
 	private Flag stopFlag;
 	private Viewer viewer;
 	private Model model;
 	
 	public Controller(View view){
 		this.stopFlag = new Flag();
-		this.viewer = new Viewer(view, this.stopFlag);
+		this.view = view;
 	}
 	
 	public synchronized void started(File dir, File wordsFile, int limitWords) {
@@ -37,9 +38,8 @@ public class Controller implements InputListener {
 		this.viewer.setElaboratedWordMonitor(this.model.getElaboratedWordsMonitor());
 		this.model.createThreadPoolUpTo(N_THREADS);
 		this.model.start();
-		System.out.println("Model started");
+		this.viewer = new Viewer(this.view, this.stopFlag);
 		this.viewer.start();
-		System.out.println("Viewer started");
 		new Thread(() -> {
 			while(!stopFlag.isSet()) {
 				try {
