@@ -97,7 +97,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 			this.startButton.setEnabled(false);
 			this.stopButton.setEnabled(true);
 			pdfDirectoryChooser.setEnabled(false);
-			excludeWords.setEnabled(false);
+			excludeWordsFileChooser.setEnabled(false);
 
 		} else if (src == stopButton) {
 			this.notifyStopped();
