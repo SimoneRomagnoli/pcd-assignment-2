@@ -43,6 +43,8 @@ public class Model extends Thread {
      * starts the main tasks via Executors.
      */
     public void run() {
+        final long start = System.currentTimeMillis();
+
         //Execute Strip tasks
         while(!this.documents.isEmpty() && !this.flag.isSet()) {
             try {
@@ -72,7 +74,7 @@ public class Model extends Thread {
 
         this.executor.shutdown();
         this.flag.set();
-        System.out.println("End");
+        System.out.println("Time elapsed: "+(System.currentTimeMillis()-start)+" ms.");
     }
 
     /**
@@ -96,11 +98,10 @@ public class Model extends Thread {
     }
 
     /**
-     * Method called by the controller to create
-     * thread pool knowing the amount of available processors, cpu usage and number of documents.
+     * Method called by the controller
+     * to create the thread pool.
      *
-     * @param n
-     * @throws IOException
+     * @param nThreads
      */
     public void createThreadPool(final int nThreads) {
         this.executor = Executors.newFixedThreadPool(nThreads);
@@ -108,11 +109,6 @@ public class Model extends Thread {
 
     public void cancelAll() {
         this.executor.shutdownNow();
-        /*
-        for(Future<Void> f:results) {
-            f.cancel(true);
-        }
-        */
     }
 
     public OccurrencesMonitor getOccurrencesMonitor() {
