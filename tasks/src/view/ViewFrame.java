@@ -74,12 +74,15 @@ public class ViewFrame extends JFrame implements ActionListener {
 		Object src = ev.getSource();
 		if (this.pdfDirectoryChooser.equals(src)) {
 			final JFileChooser startDirectoryChooser = new JFileChooser();
+			startDirectoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			startDirectoryChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
 		    int returnVal = startDirectoryChooser.showOpenDialog(this);
 		    if(returnVal == JFileChooser.APPROVE_OPTION) {
 		        pdfDirectory.setText(startDirectoryChooser.getSelectedFile().getAbsolutePath());
 		     }
 		} else if (this.excludeWordsFileChooser.equals(src)) {
 			JFileChooser wordsToDiscardFileChooser = new JFileChooser();
+			wordsToDiscardFileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
 		    int returnVal = wordsToDiscardFileChooser.showOpenDialog(this);
 		    if(returnVal == JFileChooser.APPROVE_OPTION) {
 		        excludeWords.setText(wordsToDiscardFileChooser.getSelectedFile().getAbsolutePath());
@@ -159,7 +162,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.pdfDirectory = new JTextField(10);
 		this.pdfDirectory.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.1), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
 		this.pdfDirectoryChooser = new JButton("Find directory");
-		this.pdfDirectoryChooser.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.185), (int)(HEIGHT*0.2), (int)(HEIGHT*0.1));
+		this.pdfDirectoryChooser.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.225), (int)(HEIGHT*0.4), (int)(HEIGHT*0.05));
 		this.pdfDirectoryChooser.addActionListener(this);
 		this.add(this.dirLabel);
 		this.add(this.pdfDirectory);
@@ -168,21 +171,22 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 	private void createExcludedInput() {
 		this.excLabel = new JLabel("File with excluded words:");
-		this.excLabel.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.225), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
+		this.excLabel.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.325), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
 		this.excludeWords = new JTextField(10);
-		this.excludeWords.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.3), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
+		this.excludeWords.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.4), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
 		this.excludeWordsFileChooser = new JButton("Find file");
-		this.excludeWordsFileChooser.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.385), (int)(HEIGHT*0.2), (int)(HEIGHT*0.1));
+		this.excludeWordsFileChooser.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.525), (int)(HEIGHT*0.4), (int)(HEIGHT*0.05));
 		this.excludeWordsFileChooser.addActionListener(this);
 		this.add(this.excLabel);
 		this.add(this.excludeWords);
+		this.add(this.excludeWordsFileChooser);
 	}
 
 	private void createLimitWordsInput() {
 		this.limitLabel = new JLabel("Select a number of words:");
-		this.limitLabel.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.425), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
+		this.limitLabel.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.625), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
 		this.limitOfWords = new JTextField(10);
-		this.limitOfWords.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.5), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
+		this.limitOfWords.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.7), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
 		this.limitOfWords.setText("5");
 		this.add(this.limitLabel);
 		this.add(this.limitOfWords);
@@ -201,7 +205,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.wordsLabel = new JLabel("Elaborated words:");
 		this.wordsLabel.setBounds((int)(WIDTH*0.25), (int)(HEIGHT*0.625), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
 		this.elaboratedWords = new JTextField(10);
-		this.elaboratedWords.setBounds((int)(WIDTH*0.25), (int)(HEIGHT*0.7), (int)(WIDTH*0.2), (int)(HEIGHT*0.075));
+		this.elaboratedWords.setBounds((int)(WIDTH*0.25), (int)(HEIGHT*0.7), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
 		this.elaboratedWords.setText("0");
 		this.add(this.wordsLabel);
 		this.add(this.elaboratedWords);
