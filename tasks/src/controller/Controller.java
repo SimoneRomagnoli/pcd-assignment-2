@@ -5,7 +5,6 @@ import view.View;
 import view.Viewer;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Controller part of the application - passive part.
@@ -15,10 +14,8 @@ import java.io.IOException;
  */
 public class Controller implements InputListener {
 
-	public static final int N_CPU = Runtime.getRuntime().availableProcessors();
-	public static final double U_CPU = 0.8;
-	public static final double WAIT_COMPUTE_RATIO = 0.85;
-	public static final int N_THREADS =  (int)(N_CPU * U_CPU * (1 + WAIT_COMPUTE_RATIO));
+
+	public static final int N_THREADS = 8;
 
 	private View view;
 	private Flag stopFlag;
@@ -37,7 +34,7 @@ public class Controller implements InputListener {
 		this.viewer = new Viewer(this.view, this.stopFlag);
 		this.viewer.setOccurrencesMonitor(this.model.getOccurrencesMonitor());
 		this.viewer.setElaboratedWordMonitor(this.model.getElaboratedWordsMonitor());
-		this.model.createThreadPoolUpTo(N_THREADS);
+		this.model.createThreadPool(N_THREADS);
 		this.model.start();
 		this.viewer.start();
 		new Thread(() -> {

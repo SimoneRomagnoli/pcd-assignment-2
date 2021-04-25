@@ -102,8 +102,8 @@ public class Model extends Thread {
      * @param n
      * @throws IOException
      */
-    public void createThreadPoolUpTo(final int n) {
-        this.executor = Executors.newFixedThreadPool(Math.min(n, documents.size()));
+    public void createThreadPool(final int nThreads) {
+        this.executor = Executors.newFixedThreadPool(nThreads);
     }
 
     public void cancelAll() {
