@@ -15,10 +15,9 @@ public class Strip implements Callable<Void> {
 
     private static final int FIRST_PAGE = 1;
 
-    private final PDDocument document;
-
     private final ExecutorService executor;
 
+    private final PDDocument document;
     private final List<String> ignoredWords;
 
     private final OccurrencesMonitor occurrencesMonitor;
@@ -35,11 +34,13 @@ public class Strip implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         final PDFTextStripper stripper = new PDFTextStripper();
-        stripper.setStartPage(FIRST_PAGE);
-        stripper.setEndPage(this.document.getNumberOfPages());
-        final String text = stripper.getText(this.document);
+        for(int page = FIRST_PAGE; page <= this.document.getNumberOfPages(); page++) {
+            stripper.setStartPage(page);
+            stripper.setEndPage(page);
+            final String text = stripper.getText(this.document);
+            this.executor.submit(new SplitFilterCount(text, this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
+        }
         this.document.close();
-        this.executor.submit(new SplitFilterCount(text, this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
         return null;
     }
 }

@@ -16,6 +16,7 @@ public class SplitFilterCount implements Callable<Void> {
 
     private final String text;
     private final List<String> ignoredWords;
+
     private final OccurrencesMonitor occurrencesMonitor;
     private final ElaboratedWordsMonitor wordsMonitor;
 

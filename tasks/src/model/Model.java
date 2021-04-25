@@ -62,15 +62,17 @@ public class Model extends Thread {
         }
 
         //Wait for task termination and then stop the application
-        while(!this.executor.isTerminated()) {
+        for(Future<Void> result:results) {
             try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
+                result.get();
+            } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
         }
-        System.out.println("End");
+
+        this.executor.shutdown();
         this.flag.set();
+        System.out.println("End");
     }
 
     /**
