@@ -28,7 +28,9 @@ public class SplitFilterCount implements Callable<Void> {
 
     @Override
     public Void call() {
-        this.occurrencesMonitor.writeOccurrence(count(filter(split(this.text))));
+        String[] splitText = split(this.text);
+        this.wordsMonitor.add(splitText.length);
+        this.occurrencesMonitor.writeOccurrence(count(filter(splitText)));
         return null;
     }
 

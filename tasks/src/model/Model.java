@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -24,7 +25,6 @@ public class Model extends Thread {
     private final List<String> ignoredWords;
 
     private ExecutorService executor;
-    private final List<Future<String>> stripResults;
     private final List<Future<Void>> results;
 
     private Flag flag;
@@ -35,7 +35,6 @@ public class Model extends Thread {
         this.ignoredWords = new ArrayList<>();
         this.flag = flag;
         this.documents = new ArrayDeque<>();
-        this.stripResults = new LinkedList<>();
         this.results = new LinkedList<>();
     }
 
@@ -53,38 +52,22 @@ public class Model extends Thread {
                 if (!ap.canExtractContent()) {
                     throw new IOException("You do not have permission to extract text");
                 } else {
-                    Future<String> stripResult = executor.submit(new Strip(doc));
-                    stripResults.add(stripResult);
+                    executor.submit(new Strip(doc, this.executor, this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
                     System.out.println("Submitted file: " + f.getName());
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
-        //Execute split, filter, count tasks
-        while(!stripResults.isEmpty()) {
-            final Iterator<Future<String>> stripIterator = stripResults.iterator();
-            while (stripIterator.hasNext()) {
-                try {
-
-                    final Future<String> future = stripIterator.next();
-                    if (future.isCancelled()) {
-                        this.join();
-                    }
-                    if (future.isDone()) {
-                        System.out.println("Processing a file");
-                        Future<Void> result = executor.submit(new SplitFilterCount(future.get(), this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
-                        results.add(result);
-                        stripIterator.remove();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        //Wait for task termination and then stop the application
+        for(Future<Void> result:results) {
+            try {
+                result.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
             }
         }
-
-        //Terminate
         this.flag.set();
         System.out.println("End");
     }
@@ -121,9 +104,6 @@ public class Model extends Thread {
     }
 
     public void cancelAll() {
-        for(Future<String> f:stripResults) {
-            f.cancel(true);
-        }
         for(Future<Void> f:results) {
             f.cancel(true);
         }
