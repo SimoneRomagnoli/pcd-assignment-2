@@ -37,7 +37,9 @@ public class Controller implements InputListener {
 		this.viewer.setElaboratedWordMonitor(this.model.getElaboratedWordsMonitor());
 		this.model.createThreadPoolUpTo(N_THREADS);
 		this.model.start();
+		System.out.println("Model started");
 		this.viewer.start();
+		System.out.println("Viewer started");
 		new Thread(() -> {
 			while(!stopFlag.isSet()) {
 				try {

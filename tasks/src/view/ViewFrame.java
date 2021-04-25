@@ -135,6 +135,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 				});
 			}
 			final String finalAcc = acc;
+
 			SwingUtilities.invokeLater(() -> {
 				this.results.setText(finalAcc);
 			});
