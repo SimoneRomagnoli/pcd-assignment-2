@@ -34,11 +34,11 @@ public class Controller implements InputListener {
 		stopFlag.reset();
 		this.model = new Model(this.stopFlag);
 		this.model.setArgs(dir, wordsFile, limitWords);
+		this.viewer = new Viewer(this.view, this.stopFlag);
 		this.viewer.setOccurrencesMonitor(this.model.getOccurrencesMonitor());
 		this.viewer.setElaboratedWordMonitor(this.model.getElaboratedWordsMonitor());
 		this.model.createThreadPoolUpTo(N_THREADS);
 		this.model.start();
-		this.viewer = new Viewer(this.view, this.stopFlag);
 		this.viewer.start();
 		new Thread(() -> {
 			while(!stopFlag.isSet()) {
