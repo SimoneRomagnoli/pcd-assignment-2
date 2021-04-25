@@ -52,7 +52,8 @@ public class Model extends Thread {
                 if (!ap.canExtractContent()) {
                     throw new IOException("You do not have permission to extract text");
                 } else {
-                    executor.submit(new Strip(doc, this.executor, this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
+                    Future<Void> result = executor.submit(new Strip(doc, this.executor, this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
+                    this.results.add(result);
                     System.out.println("Submitted file: " + f.getName());
                 }
             } catch (Exception e) {
@@ -61,15 +62,15 @@ public class Model extends Thread {
         }
 
         //Wait for task termination and then stop the application
-        for(Future<Void> result:results) {
+        while(!this.executor.isTerminated()) {
             try {
-                result.get();
-            } catch (InterruptedException | ExecutionException e) {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        this.flag.set();
         System.out.println("End");
+        this.flag.set();
     }
 
     /**
@@ -104,9 +105,12 @@ public class Model extends Thread {
     }
 
     public void cancelAll() {
+        this.executor.shutdownNow();
+        /*
         for(Future<Void> f:results) {
             f.cancel(true);
         }
+        */
     }
 
     public OccurrencesMonitor getOccurrencesMonitor() {

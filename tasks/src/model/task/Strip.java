@@ -9,13 +9,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 public class Strip implements Callable<Void> {
 
     private static final int FIRST_PAGE = 1;
+
     private final PDDocument document;
+
     private final ExecutorService executor;
+
     private final List<String> ignoredWords;
+
     private final OccurrencesMonitor occurrencesMonitor;
     private final ElaboratedWordsMonitor wordsMonitor;
 
@@ -33,8 +38,8 @@ public class Strip implements Callable<Void> {
         stripper.setStartPage(FIRST_PAGE);
         stripper.setEndPage(this.document.getNumberOfPages());
         final String text = stripper.getText(this.document);
-        this.executor.submit(new SplitFilterCount(text, this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
         this.document.close();
+        this.executor.submit(new SplitFilterCount(text, this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
         return null;
     }
 }
