@@ -15,7 +15,7 @@ import java.io.File;
 public class Controller implements InputListener {
 
 
-	public static final int N_THREADS = 15;
+	public static final int N_THREADS = 8;
 
 	private View view;
 	private Flag stopFlag;
