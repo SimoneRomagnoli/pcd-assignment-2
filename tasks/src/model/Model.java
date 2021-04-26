@@ -10,10 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * Class representing the model of the program:
@@ -24,7 +21,7 @@ public class Model extends Thread {
     private final Queue<File> documents;
     private final List<String> ignoredWords;
 
-    private ExecutorService executor;
+    private ForkJoinPool executor;
     private final List<Future<Void>> results;
 
     private Flag flag;
@@ -54,7 +51,7 @@ public class Model extends Thread {
                 if (!ap.canExtractContent()) {
                     throw new IOException("You do not have permission to extract text");
                 } else {
-                    Future<Void> result = executor.submit(new Strip(doc, this.executor, this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
+                    Future<Void> result = executor.submit(new Strip(doc, this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor));
                     this.results.add(result);
                     System.out.println("Submitted file: " + f.getName());
                 }
@@ -64,6 +61,7 @@ public class Model extends Thread {
         }
 
         //Wait for task termination and then stop the application
+
         for(Future<Void> result:results) {
             try {
                 result.get();
@@ -71,6 +69,7 @@ public class Model extends Thread {
                 e.printStackTrace();
             }
         }
+
 
         this.executor.shutdown();
         this.flag.set();
@@ -104,7 +103,8 @@ public class Model extends Thread {
      * @param nThreads
      */
     public void createThreadPool(final int nThreads) {
-        this.executor = Executors.newFixedThreadPool(nThreads);
+        this.executor = new ForkJoinPool(nThreads);
+        //this.executor = Executors.newFixedThreadPool(nThreads);
     }
 
     public void cancelAll() {
