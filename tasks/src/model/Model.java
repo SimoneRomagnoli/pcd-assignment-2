@@ -61,7 +61,6 @@ public class Model extends Thread {
         }
 
         //Wait for task termination and then stop the application
-
         for(Future<Void> result:results) {
             try {
                 result.get();
