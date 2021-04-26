@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    /* module 2.2 - async programming with event-loops - vert.x */
+    implementation 'io.vertx:vertx-core:4.0.3'
+    implementation 'io.vertx:vertx-web:4.0.3'
+    implementation 'io.vertx:vertx-web-client:4.0.3'
+
+    /* module 2.3 - reactive programming - RxJava */
+    implementation "io.reactivex.rxjava3:rxjava:3.0.12"
+
+    /* assignment #01 */
+    implementation 'org.apache.pdfbox:pdfbox:2.0.22'
+    implementation group: 'org.jfree', name: 'jcommon', version: '1.0.23'
+    implementation 'org.jfree:jfreechart:1.5.0'
+}
+
+test {
+    useJUnitPlatform()
+}
