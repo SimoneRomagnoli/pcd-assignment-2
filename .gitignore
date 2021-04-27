@@ -2,7 +2,7 @@
 *.class
 
 # Intelij project
-*.idea*
+.idea
 
 # Log file
 *.log
