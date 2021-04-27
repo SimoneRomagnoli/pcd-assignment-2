@@ -4,10 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 
 import java.text.SimpleDateFormat;
@@ -20,7 +17,14 @@ public class TrainWebClient extends AbstractVerticle {
     private static final int PORT = 443;
     private static final String HOST = "www.lefrecce.it";
     private static final String REQUEST_URI_WITH_STANDARD_PARAMS = "/msite/api/solutions?arflag=A&adultno=1&childno=0&direction=A&frecce=false&onlyRegional=false";
+
     private static final String DATE_FORMAT = "dd/MM/yyyy";
+
+    private static final String SOLUTION_ID = "idsolution";
+    private static final String ORIGIN = "origin";
+    private static final String DESTINATION = "destination";
+    private static final String DEPARTURE_TIME = "departuretime";
+    private static final String ARRIVAL_TIME = "arrivaltime";
 
     private final WebClient client;
 
@@ -45,8 +49,8 @@ public class TrainWebClient extends AbstractVerticle {
                         System.out.println("Something went wrong in JSON response: " + err.getMessage());
                         travels.fail(err.getMessage());
                     })
-                    .onSuccess(string -> {
-                        System.out.println("Received a json array: " + string);
+                    .onSuccess(jsonArray -> {
+                        System.out.println("Received a json array: " + jsonArray);
                         /* HERE IMPLEMENT SOMETHING: I STILL DON'T KNOW WHAT */
                     })
                     .onComplete(asyncResult -> {
