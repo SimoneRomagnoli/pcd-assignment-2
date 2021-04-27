@@ -1,25 +1,20 @@
 package part2;
 
 import java.sql.Date;
-import java.sql.Time;
-import java.util.List;
-import java.util.Map;
 
 public interface Travel {
 
-    Station from();
+    String getSolutionId();
 
-    Station to();
+    Station getOrigin();
 
-    List<Station> stations();
+    Station getDestination();
 
-    Date startingDate();
+    Date getDepartureDate();
 
-    Time startingTime();
+    Long getDepartureTime();
 
-    List<Time> times();
-
-    Map<Station, Time> stops();
+    Long getArrivalTime();
 
     String toString();
 }
