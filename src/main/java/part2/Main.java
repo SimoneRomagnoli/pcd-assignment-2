@@ -12,13 +12,17 @@ public class Main {
             Future<List<Travel>> future = client.getTrainSolutions("MILANO CENTRALE", "ROMA TERMINI", "28/05/2019", 17);
             future
                     .onComplete(res -> {
-                        System.out.println("Main completed with "+res);
+                        //System.out.println("Main completed with "+res);
                     })
-                    .onSuccess(res -> {
-                        System.out.println("Main succeeded with "+res);
+                    .onSuccess(travels -> {
+                        System.out.println("Le possibili soluzioni sono:");
+                        for(Travel travel:travels) {
+                            System.out.println(travel.toString());
+                        }
+                        //System.out.println("Main succeeded with "+res);
                     })
                     .onFailure(err -> {
-                        System.out.println("Main failed with "+err);
+                        //System.out.println("Main failed with "+err);
                     });
 
         }
