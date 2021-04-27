@@ -1,6 +1,6 @@
 package part2;
 
-import java.sql.Date;
+import java.util.Date;
 
 public interface Travel {
 
@@ -10,11 +10,11 @@ public interface Travel {
 
     Station getDestination();
 
-    Date getDepartureDate();
+    String getDate();
 
-    Long getDepartureTime();
+    String getDepartureTime();
 
-    Long getArrivalTime();
+    String getArrivalTime();
 
     String toString();
 }
