@@ -3,6 +3,7 @@ package part2;
 import io.vertx.core.json.JsonObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class TrainStatus implements Train {
 
     public TrainStatus(JsonObject json) {
         this.trainCode = json.getString(TRAIN_CODE);
-        this.stops = IntStream.range(0, json.getJsonArray(STOPS).size()).boxed().map(i -> json.getJsonArray(STOPS).getJsonObject(i).getString(STOP_NAME)).collect(Collectors.toList());
+        this.stops = json.getJsonArray(STOPS) == null ? new ArrayList<>() : IntStream.range(0, json.getJsonArray(STOPS).size()).boxed().map(i -> json.getJsonArray(STOPS).getJsonObject(i).getString(STOP_NAME)).collect(Collectors.toList());
         this.lastDetection = json.getString(LAST_DETECTION);
         this.origin = json.getString(ORIGIN);
         this.destination = json.getString(DESTINATION);
