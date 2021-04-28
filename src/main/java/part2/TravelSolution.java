@@ -2,7 +2,6 @@ package part2;
 
 import io.vertx.core.json.JsonObject;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
@@ -18,24 +17,15 @@ public class TravelSolution implements Travel {
     private static final String ARRIVAL_TIME = "arrivaltime";
 
     private final String solutionId;
-    private final Station origin;
-    private final Station destination;
+    private final String origin;
+    private final String destination;
     private final Date departureTime;
     private final Date arrivalTime;
 
-    public TravelSolution(String solutionId, Station origin, Station destination, Date departureTime, Date arrivalTime) {
-        this.solutionId = solutionId;
-        this.origin = origin;
-        this.destination = destination;
-        this.departureTime = departureTime;
-        this.arrivalTime = arrivalTime;
-
-    }
-
     public TravelSolution(JsonObject json) {
         this.solutionId = json.getString(SOLUTION_ID);
-        this.origin = new StationImpl(json.getString(ORIGIN));
-        this.destination = new StationImpl(json.getString(DESTINATION));
+        this.origin = json.getString(ORIGIN);
+        this.destination = json.getString(DESTINATION);
         this.departureTime = new Date(json.getLong(DEPARTURE_TIME));
         this.arrivalTime = new Date(json.getLong(ARRIVAL_TIME));
 
@@ -47,12 +37,12 @@ public class TravelSolution implements Travel {
     }
 
     @Override
-    public Station getOrigin() {
+    public String getOrigin() {
         return this.origin;
     }
 
     @Override
-    public Station getDestination() {
+    public String getDestination() {
         return this.destination;
     }
 
@@ -73,10 +63,11 @@ public class TravelSolution implements Travel {
 
     @Override
     public String toString() {
-        return "[TRAVEL SOLUTION]: from "+this.origin.getName()+
-                " to "+this.destination.getName()+
+        return "[TRAVEL SOLUTION]: from "+getOrigin()+
+                " to "+getDestination()+
                 " in date "+getDate()+
                 " departure at "+getDepartureTime()+
-                " arrival at "+getArrivalTime();
+                " arrival at "+getArrivalTime()+
+                "\n";
     }
 }
