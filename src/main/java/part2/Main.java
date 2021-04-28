@@ -2,15 +2,11 @@ package part2;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-
-import java.util.List;
 
 public class Main {
         public static void main(String[] args) {
             Vertx vertx = Vertx.vertx();
-            TrainWebClient client = new TrainWebClient(vertx);
+            TrainAPIWebClient client = new TrainAPIWebClient(vertx);
 
             //TEST GET TRAIN SOLUTIONS
             /*
@@ -29,8 +25,8 @@ public class Main {
              */
 
             //TEST GET REAL TIME TRAIN INFO
-            ///*
-            Future<Train> future = client.getRealTimeTrainInfo("S01700", "8811", System.currentTimeMillis());
+            /*
+            Future<Train> future = client.getRealTimeTrainInfo("S01700", "8811");
             future.onSuccess(res -> {
                         System.out.println(res.toString());
                     })
@@ -38,7 +34,19 @@ public class Main {
                         System.out.println("Main failed with "+err);
                     });
 
-             //*/
+             */
+
+            //TEST GET REAL TIME STATION INFO
+            ///*
+            Future<Station> future = client.getRealTimeStationInfo("S01700", StationStatus.ARRIVALS_OR_DEPARTURES.ARRIVALS);
+            future.onSuccess(res -> {
+                        System.out.println(res.toString());
+                    })
+                    .onFailure(err -> {
+                        System.out.println("Main failed with "+err);
+                    });
+
+            //*/
             System.out.println("This should be printed before future success.");
 
         }
