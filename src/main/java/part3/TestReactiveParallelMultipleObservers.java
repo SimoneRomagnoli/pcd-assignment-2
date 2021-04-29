@@ -12,7 +12,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TestReactiveParallel {
+public class TestReactiveParallelMultipleObservers {
 
     final static String REGEX = "[^a-zA-Z0-9]";
     private static File ignoredWordsFile = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/ignoredWords.txt");
@@ -77,30 +77,33 @@ public class TestReactiveParallel {
         File directory = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/res");
         List<File> documents = Arrays.asList(Objects.requireNonNull(directory.listFiles()));
 
-        System.out.println("File extracted form the directory, number of files = " + documents.size());
+        System.out.println("File extracted form the directory, number of files = " +  documents.size());
 
         Flowable<File> source = Flowable.fromIterable(documents);
 
         source.flatMap(s -> Flowable.just(s)
-                .subscribeOn(Schedulers.computation())
-                .map(TestReactiveParallel::loadAndStrip)
-                .map(TestReactiveParallel::split)
-                .map(TestReactiveParallel::filter)
-                .map(TestReactiveParallel::count)
-                .observeOn(Schedulers.single())
-                .map(subMap->{
-                    subMap.forEach((k,c)->{
-                        map.merge(k, c, Integer::sum);
-                    });
-                    return map;
-                })
-                .sorted((a, b) -> map.get(b) - map.get(a))
-        ).blockingSubscribe(m->m.forEach((k,v)->{
-            log(k + " "+ v);
-        }));
+                .observeOn(Schedulers.io())
+                .map(TestReactiveParallelMultipleObservers::loadAndStrip)
+                .observeOn(Schedulers.computation())
+                .map(TestReactiveParallelMultipleObservers::split)
+                .map(TestReactiveParallelMultipleObservers::filter)
+                .map(TestReactiveParallelMultipleObservers::count)
+          //.sorted()    // qui vorrei ordinare in base al conteggio delle parole
+          //.limit(1)  // questa sarebbe da fare ma è un metodo degli stream, l'alternativa è take
+        ).blockingSubscribe(v -> {
 
+            v.forEach((s, c)-> {
+                map.merge(s, c, Integer::sum);
+            });
+        });
 
-        System.out.println(map.size() + " DIOPORCO");
-
+        System.out.println("resulting map: ");
+        map
+        .keySet()
+        .stream()
+        .sorted((a, b) -> map.get(b) - map.get(a))
+        .limit(5)
+        .collect(Collectors.toMap(k -> k, map::get))
+                .forEach((k,v)-> log(k + " " + v));
     }
 }
