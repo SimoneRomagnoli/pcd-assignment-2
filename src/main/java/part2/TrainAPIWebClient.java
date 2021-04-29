@@ -56,7 +56,7 @@ public class TrainAPIWebClient {
         return null;
     }
 
-    public Future<Station> getRealTimeStationInfo(String stationName, StationStatus.ARRIVALS_OR_DEPARTURES arrivalsOrDepartures) {
+    public Future<Station> getRealTimeStationInfo(String stationName, StationStatus.ArrivalsOrDepartures arrivalsOrDepartures) {
         try {
             Promise<JsonArray> jsonResponse = getRequestForRealTimeStationInfo(stationName, arrivalsOrDepartures, Calendar.getInstance().getTime());
             return futureRealTimeStationInfo(jsonResponse, arrivalsOrDepartures);
@@ -166,14 +166,14 @@ public class TrainAPIWebClient {
         return trainStatus.future();
     }
 
-    private Promise<JsonArray> getRequestForRealTimeStationInfo(String stationName, StationStatus.ARRIVALS_OR_DEPARTURES arrivalsOrDepartures, Date time) {
+    private Promise<JsonArray> getRequestForRealTimeStationInfo(String stationName, StationStatus.ArrivalsOrDepartures arrivalsOrDepartures, Date time) {
         Promise<JsonArray> result = Promise.promise();
         try {
             this.client
                     .get(HTTP_PORT, HOST_GET_REAL_TIME_INFO, REQUEST_URI_GET_REAL_TIME_STATION_INFO
-                            +(arrivalsOrDepartures.equals(StationStatus.ARRIVALS_OR_DEPARTURES.DEPARTURES) ? "partenze" : "arrivi")+"/"
+                            +(arrivalsOrDepartures.equals(StationStatus.ArrivalsOrDepartures.DEPARTURES) ? "partenze" : "arrivi")+"/"
                             +stationName+"/"
-                            +time.toString())
+                            +time.toString().replace("CEST", "UTC").replace(" ", "%20"))
                     .send()
                     .onSuccess(response -> {
                         System.out.println("Received response with status code " + response.statusCode());
@@ -191,7 +191,7 @@ public class TrainAPIWebClient {
         return result;
     }
 
-    private Future<Station> futureRealTimeStationInfo(Promise<JsonArray> jsonPromise, StationStatus.ARRIVALS_OR_DEPARTURES arrivalsOrDepartures) {
+    private Future<Station> futureRealTimeStationInfo(Promise<JsonArray> jsonPromise, StationStatus.ArrivalsOrDepartures arrivalsOrDepartures) {
         Promise<Station> stationStatus = Promise.promise();
         jsonPromise
                 .future()
