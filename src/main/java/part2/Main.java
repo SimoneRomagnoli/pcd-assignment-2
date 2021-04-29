@@ -1,16 +1,20 @@
 package part2;
 
 import io.vertx.core.Vertx;
-import part2.api.client.TrainAPIWebClient;
+import part2.controller.Controller;
+import part2.view.View;
 
 public class Main {
         public static void main(String[] args) {
             Vertx vertx = Vertx.vertx();
-            TrainAPIWebClient client = new TrainAPIWebClient(vertx);
+            View view = new View();
+            Controller controller = new Controller(view, vertx);
+            view.addListener(controller);
+            view.display();
 
             //TEST GET TRAIN SOLUTIONS
             /*
-            Future<List<Travel>> future = client.getTrainSolutions("MILANO CENTRALE", "ROMA TERMINI", "28/05/2019", 17);
+            Future<List<Travel>> future = client.getTrainSolutions("CESENATICO", "SAVIGNANO SUL RUBICONE", "29/04/2021", 17);
             future.onSuccess(travels -> {
                         System.out.println("Le possibili soluzioni sono:");
                         for(Travel travel:travels) {
@@ -22,7 +26,7 @@ public class Main {
                         //System.out.println("Main failed with "+err);
                     });
 
-             */
+            */
 
             //TEST GET REAL TIME TRAIN INFO
             /*
