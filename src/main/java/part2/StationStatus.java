@@ -8,14 +8,14 @@ import java.util.stream.IntStream;
 
 public class StationStatus implements Station {
 
-    public enum ARRIVALS_OR_DEPARTURES {
+    public enum ArrivalsOrDepartures {
         ARRIVALS, DEPARTURES
     }
 
-    private final ARRIVALS_OR_DEPARTURES arrivalsOrDepartures;
+    private final ArrivalsOrDepartures arrivalsOrDepartures;
     private final List<Train> trains;
 
-    public StationStatus(JsonArray json, ARRIVALS_OR_DEPARTURES arrivalsOrDepartures) {
+    public StationStatus(JsonArray json, ArrivalsOrDepartures arrivalsOrDepartures) {
         this.arrivalsOrDepartures = arrivalsOrDepartures;
         this.trains = IntStream.range(0, json.size()).boxed().map(i -> new TrainStatus(json.getJsonObject(i))).collect(Collectors.toList());
     }
@@ -32,12 +32,12 @@ public class StationStatus implements Station {
 
     @Override
     public boolean isArrivalsStatus() {
-        return this.arrivalsOrDepartures.equals(ARRIVALS_OR_DEPARTURES.ARRIVALS);
+        return this.arrivalsOrDepartures.equals(ArrivalsOrDepartures.ARRIVALS);
     }
 
     @Override
     public boolean isDeparturesStatus() {
-        return this.arrivalsOrDepartures.equals(ARRIVALS_OR_DEPARTURES.DEPARTURES);
+        return this.arrivalsOrDepartures.equals(ArrivalsOrDepartures.DEPARTURES);
     }
 
     @Override

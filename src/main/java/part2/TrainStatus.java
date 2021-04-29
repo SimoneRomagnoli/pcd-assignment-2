@@ -38,8 +38,8 @@ public class TrainStatus implements Train {
         this.lastDetection = json.getString(LAST_DETECTION);
         this.origin = json.getString(ORIGIN);
         this.destination = json.getString(DESTINATION);
-        this.departure = new Date(json.getLong(DEPARTURE_TIME));
-        this.arrival = new Date(json.getLong(ARRIVAL_TIME));
+        this.departure = json.getLong(DEPARTURE_TIME) == null ? null : new Date(json.getLong(DEPARTURE_TIME));
+        this.arrival = json.getLong(ARRIVAL_TIME) == null ? null : new Date(json.getLong(ARRIVAL_TIME));
         this.delay = json.getInteger(DELAY);
         this.inStation = json.getBoolean(IN_STATION);
     }
@@ -71,12 +71,12 @@ public class TrainStatus implements Train {
 
     @Override
     public String getDepartureTime() {
-        return new SimpleDateFormat(TravelSolution.HOUR_FORMAT).format(this.departure);
+        return this.departure == null ? "null" : new SimpleDateFormat(TravelSolution.HOUR_FORMAT).format(this.departure);
     }
 
     @Override
     public String getArrivalTime() {
-        return new SimpleDateFormat(TravelSolution.HOUR_FORMAT).format(this.arrival);
+        return this.arrival == null ? "null" : new SimpleDateFormat(TravelSolution.HOUR_FORMAT).format(this.arrival);
     }
 
     @Override
