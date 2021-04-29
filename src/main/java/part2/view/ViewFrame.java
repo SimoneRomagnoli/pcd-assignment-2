@@ -21,6 +21,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 	private static final int COLS = 10;
 
+	//TRAVEL SOLUTIONS
 	private JLabel travelLabel;
 	private JLabel travelFromLabel;
 	private JTextField travelFrom;
@@ -31,6 +32,15 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private JLabel travelFromTimeLabel;
 	private JTextField travelFromTime;
 	private JButton travelSearchButton;
+
+	//TRAIN INFO
+	private JLabel trainLabel;
+	private JLabel trainCodeLabel;
+	private JTextField trainCode;
+	private JLabel trainOriginLabel;
+	private JTextField trainOrigin;
+	private JButton trainInfoButton;
+
 	
 	private ArrayList<InputListener> listeners;
 
@@ -40,6 +50,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 		listeners = new ArrayList<>();
 
 		this.createTravelInput();
+		this.createTrainInfoInput();
 
 		this.setSize(WIDTH, HEIGHT);
 		setResizable(false);
@@ -61,13 +72,24 @@ public class ViewFrame extends JFrame implements ActionListener {
 			final String date = this.travelInDate.getText();
 			final int time = Integer.parseInt(this.travelFromTime.getText());
 			this.notifyTravelSearch(origin, destination, date, time);
-		} else {}
+		}
+		if(this.trainInfoButton.equals(src)) {
+			final String trainCode = this.trainCode.getText();
+			final String stationCode = this.trainOrigin.getText();
+			this.notifyTrainInfo(trainCode, stationCode);
+		}
 
 	}
 
 	private void notifyTravelSearch(String origin, String destination, String date, int time) {
 		for(InputListener listener: this.listeners) {
 			listener.searchTravel(origin, destination, date, time);
+		}
+	}
+
+	private void notifyTrainInfo(String trainCode, String stationCode) {
+		for(InputListener listener: this.listeners) {
+			listener.trainInfo(trainCode, stationCode);
 		}
 	}
 	
@@ -128,6 +150,35 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.travelSearchButton.setBounds((int)(WIDTH*0.15), (int)(HEIGHT*0.2), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
 		this.travelSearchButton.addActionListener(this);
 		this.add(this.travelSearchButton);
+	}
+
+	private void createTrainInfoInput() {
+		//TITLE
+		this.trainLabel = new JLabel("Search your travel: ");
+		this.trainLabel.setBounds((int)(WIDTH*0.05), (int)(HEIGHT*0.35), WIDTH, (int)(HEIGHT*0.05));
+		this.add(this.trainLabel);
+
+		//CODE
+		this.trainCodeLabel = new JLabel("Train: ");
+		this.trainCodeLabel.setBounds((int)(WIDTH*0.1), (int)(HEIGHT*0.4), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
+		this.trainCode = new JTextField(COLS);
+		this.trainCode.setBounds((int)(WIDTH*0.15), (int)(HEIGHT*0.4), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
+		this.add(this.trainCodeLabel);
+		this.add(this.trainCode);
+
+		//ORIGIN STATION
+		this.trainOriginLabel = new JLabel("Origin station: ");
+		this.trainOriginLabel.setBounds((int)(WIDTH*0.45), (int)(HEIGHT*0.4), (int)(WIDTH*0.4), (int)(HEIGHT*0.05));
+		this.trainOrigin = new JTextField(COLS);
+		this.trainOrigin.setBounds((int)(WIDTH*0.6), (int)(HEIGHT*0.4), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
+		this.add(this.trainOriginLabel);
+		this.add(this.trainOrigin);
+
+		//GET INFO
+		this.trainInfoButton = new JButton("Get Info");
+		this.trainInfoButton.setBounds((int)(WIDTH*0.15), (int)(HEIGHT*0.45), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
+		this.trainInfoButton.addActionListener(this);
+		this.add(this.trainInfoButton);
 	}
 
 }

@@ -51,7 +51,6 @@ public class Main {
                     });
 
             */
-            System.out.println("This should be printed before future success.");
 
         }
     }
