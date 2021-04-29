@@ -2,6 +2,9 @@ package part2;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import part2.api.client.TrainAPIWebClient;
+import part2.api.model.Station;
+import part2.api.model.StationStatus;
 
 public class Main {
         public static void main(String[] args) {
@@ -38,7 +41,7 @@ public class Main {
 
             //TEST GET REAL TIME STATION INFO
             ///*
-            Future<Station> future = client.getRealTimeStationInfo("S01700", StationStatus.ARRIVALS_OR_DEPARTURES.ARRIVALS);
+            Future<Station> future = client.getRealTimeStationInfo("S01700", StationStatus.ArrivalsOrDepartures.ARRIVALS);
             future.onSuccess(res -> {
                         System.out.println(res.toString());
                     })

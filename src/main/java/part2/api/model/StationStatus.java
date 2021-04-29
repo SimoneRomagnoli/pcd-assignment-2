@@ -1,4 +1,4 @@
-package part2;
+package part2.api.model;
 
 import io.vertx.core.json.JsonArray;
 

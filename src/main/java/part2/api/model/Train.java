@@ -1,6 +1,5 @@
-package part2;
+package part2.api.model;
 
-import java.util.Date;
 import java.util.List;
 
 public interface Train {
