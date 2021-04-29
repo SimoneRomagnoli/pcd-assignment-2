@@ -5,6 +5,7 @@ import part1.view.View;
 import part1.view.Viewer;
 
 import java.io.File;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Controller part of the application - passive part.
@@ -15,12 +16,12 @@ import java.io.File;
 public class Controller implements InputListener {
 
 
-	public static final int N_THREADS = 8;
+	public static final int N_THREADS = Runtime.getRuntime().availableProcessors();
+
+	private ForkJoinPool executor;
 
 	private View view;
 	private Flag stopFlag;
-	private Viewer viewer;
-	private Model model;
 	
 	public Controller(View view){
 		this.stopFlag = new Flag();
@@ -28,25 +29,18 @@ public class Controller implements InputListener {
 	}
 	
 	public synchronized void started(File dir, File wordsFile, int limitWords) {
-		stopFlag.reset();
-		this.model = new Model(this.stopFlag);
-		this.model.setArgs(dir, wordsFile, limitWords);
-		this.viewer = new Viewer(this.view, this.stopFlag);
-		this.viewer.setOccurrencesMonitor(this.model.getOccurrencesMonitor());
-		this.viewer.setElaboratedWordMonitor(this.model.getElaboratedWordsMonitor());
-		this.model.createThreadPool(N_THREADS);
-		this.model.start();
-		this.viewer.start();
-		new Thread(() -> {
-			while(!stopFlag.isSet()) {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-			this.model.cancelAll();
-		});
+		this.stopFlag.reset();
+
+		this.executor = new ForkJoinPool(N_THREADS);
+
+		final Model model = new Model(this.stopFlag, dir, wordsFile, limitWords, this.executor);
+
+		final Viewer viewer = new Viewer(this.view, this.stopFlag, this.executor);
+		viewer.setOccurrencesMonitor(model.getOccurrencesMonitor());
+		viewer.setElaboratedWordMonitor(model.getElaboratedWordsMonitor());
+
+		this.executor.submit(model);
+		this.executor.submit(viewer);
 	}
 
 	public synchronized void stopped() {
