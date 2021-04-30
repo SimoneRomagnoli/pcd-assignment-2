@@ -15,7 +15,7 @@ public class View {
 	}
 	
 	public void addListener(InputListener l){
-		frame.addListener(l);
+		frame.setInputListener(l);
 	}
 
 	public void display() {
