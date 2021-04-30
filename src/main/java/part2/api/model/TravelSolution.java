@@ -57,9 +57,12 @@ public class TravelSolution implements Travel {
     }
 
     @Override
-    public String getDate() {
+    public String getDepartureDate() {
         return new SimpleDateFormat(DATE_FORMAT).format(this.departureTime);
     }
+
+    @Override
+    public String getArrivalDate() { return new SimpleDateFormat(DATE_FORMAT).format(this.arrivalTime); }
 
     @Override
     public String getDepartureTime() {
@@ -90,7 +93,7 @@ public class TravelSolution implements Travel {
     public String toString() {
         return "[TRAVEL SOLUTION]: from "+getOrigin()+
                 " to "+getDestination()+
-                " in date "+getDate()+
+                " in date "+ getDepartureDate()+
                 " departure at "+getDepartureTime()+
                 " arrival at "+getArrivalTime()+
                 " with "+getScales()+" scales.\n"+

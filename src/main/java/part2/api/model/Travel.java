@@ -10,7 +10,9 @@ public interface Travel {
 
     String getDestination();
 
-    String getDate();
+    String getDepartureDate();
+
+    String getArrivalDate();
 
     String getDepartureTime();
 
