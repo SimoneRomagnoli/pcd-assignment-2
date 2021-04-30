@@ -1,12 +1,18 @@
 package part2.controller;
 
+import io.vertx.core.Future;
+import part2.api.model.Station;
 import part2.api.model.StationStatus;
+import part2.api.model.Train;
+import part2.api.model.Travel;
+
+import java.util.List;
 
 public interface InputListener {
 
-    void searchTravel(String from, String to, String date, int time);
+    Future<List<Travel>> searchTravel(String from, String to, String date, int time);
 
-    void trainInfo(String trainCode, String stationCode);
+    Future<Train> trainInfo(String trainCode, String stationCode);
 
-    void stationInfo(String stationCode, StationStatus.ArrivalsOrDepartures arrivalsOrDepartures);
+    Future<Station> stationInfo(String stationCode, StationStatus.ArrivalsOrDepartures arrivalsOrDepartures);
 }
