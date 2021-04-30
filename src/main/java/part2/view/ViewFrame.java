@@ -1,5 +1,6 @@
 package part2.view;
 
+import part2.api.model.StationStatus;
 import part2.controller.InputListener;
 
 import javax.swing.*;
@@ -41,6 +42,14 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private JTextField trainOrigin;
 	private JButton trainInfoButton;
 
+	//STATION INFO
+	private JLabel stationLabel;
+	private JLabel stationCodeLabel;
+	private JTextField stationCode;
+	private ButtonGroup stationArrivalsOrDepartures;
+	private JRadioButton stationArrivals;
+	private JRadioButton stationDepartures;
+	private JButton stationInfoButton;
 	
 	private ArrayList<InputListener> listeners;
 
@@ -51,6 +60,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 		this.createTravelInput();
 		this.createTrainInfoInput();
+		this.createStationInfoInput();
 
 		this.setSize(WIDTH, HEIGHT);
 		setResizable(false);
@@ -71,28 +81,39 @@ public class ViewFrame extends JFrame implements ActionListener {
 			final String destination = this.travelTo.getText().toUpperCase();
 			final String date = this.travelInDate.getText();
 			final int time = Integer.parseInt(this.travelFromTime.getText());
-			this.notifyTravelSearch(origin, destination, date, time);
+			this.travelSearch(origin, destination, date, time);
 		}
 		if(this.trainInfoButton.equals(src)) {
 			final String trainCode = this.trainCode.getText();
 			final String stationCode = this.trainOrigin.getText();
-			this.notifyTrainInfo(trainCode, stationCode);
+			this.trainInfo(trainCode, stationCode);
+		}
+		if(this.stationInfoButton.equals(src)) {
+			final String stationCode = this.stationCode.getText();
+			final StationStatus.ArrivalsOrDepartures arrivalsOrDepartures = this.stationArrivals.isSelected() ? StationStatus.ArrivalsOrDepartures.ARRIVALS : StationStatus.ArrivalsOrDepartures.DEPARTURES;
+			this.stationInfo(stationCode, arrivalsOrDepartures);
 		}
 
 	}
 
-	private void notifyTravelSearch(String origin, String destination, String date, int time) {
+	private void travelSearch(String origin, String destination, String date, int time) {
 		for(InputListener listener: this.listeners) {
 			listener.searchTravel(origin, destination, date, time);
 		}
 	}
 
-	private void notifyTrainInfo(String trainCode, String stationCode) {
+	private void trainInfo(String trainCode, String stationCode) {
 		for(InputListener listener: this.listeners) {
 			listener.trainInfo(trainCode, stationCode);
 		}
 	}
-	
+
+	private void stationInfo(String stationCode, StationStatus.ArrivalsOrDepartures arrivalsOrDepartures) {
+		for(InputListener listener: this.listeners) {
+			listener.stationInfo(stationCode, arrivalsOrDepartures);
+		}
+	}
+
 	public void update() {
 		SwingUtilities.invokeLater(() -> {
 
@@ -147,14 +168,14 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 		//SEARCH
 		this.travelSearchButton = new JButton("Search");
-		this.travelSearchButton.setBounds((int)(WIDTH*0.15), (int)(HEIGHT*0.2), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
+		this.travelSearchButton.setBounds((int)(WIDTH*0.1), (int)(HEIGHT*0.225), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
 		this.travelSearchButton.addActionListener(this);
 		this.add(this.travelSearchButton);
 	}
 
 	private void createTrainInfoInput() {
 		//TITLE
-		this.trainLabel = new JLabel("Search your travel: ");
+		this.trainLabel = new JLabel("Get real time train info: ");
 		this.trainLabel.setBounds((int)(WIDTH*0.05), (int)(HEIGHT*0.35), WIDTH, (int)(HEIGHT*0.05));
 		this.add(this.trainLabel);
 
@@ -176,10 +197,47 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 		//GET INFO
 		this.trainInfoButton = new JButton("Get Info");
-		this.trainInfoButton.setBounds((int)(WIDTH*0.15), (int)(HEIGHT*0.45), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
+		this.trainInfoButton.setBounds((int)(WIDTH*0.1), (int)(HEIGHT*0.475), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
 		this.trainInfoButton.addActionListener(this);
 		this.add(this.trainInfoButton);
 	}
 
+
+	private void createStationInfoInput() {
+		//TITLE
+		this.stationLabel = new JLabel("Get real time station info: ");
+		this.stationLabel.setBounds((int)(WIDTH*0.05), (int)(HEIGHT*0.65), WIDTH, (int)(HEIGHT*0.05));
+		this.add(this.stationLabel);
+
+		//CODE
+		this.stationCodeLabel = new JLabel("Station: ");
+		this.stationCodeLabel.setBounds((int)(WIDTH*0.1), (int)(HEIGHT*0.7), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
+		this.stationCode = new JTextField(COLS);
+		this.stationCode.setBounds((int)(WIDTH*0.2), (int)(HEIGHT*0.7), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
+		this.add(this.stationCodeLabel);
+		this.add(this.stationCode);
+
+		//ARRIVALS OR DEPARTURES
+		this.stationArrivalsOrDepartures = new ButtonGroup();
+		this.stationArrivals = new JRadioButton("Arrivi");
+		this.stationArrivals.setSelected(true);
+		this.stationArrivals.setActionCommand("Arrivi");
+		this.stationArrivals.setBounds((int)(WIDTH*0.45), (int)(HEIGHT*0.7), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
+		this.stationDepartures = new JRadioButton("Partenze");
+		this.stationDepartures.setSelected(false);
+		this.stationDepartures.setBounds((int)(WIDTH*0.55), (int)(HEIGHT*0.7), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
+		this.stationArrivalsOrDepartures.add(this.stationArrivals);
+		this.stationArrivalsOrDepartures.add(this.stationDepartures);
+		this.stationArrivals.addActionListener(this);
+		this.stationDepartures.addActionListener(this);
+		this.add(this.stationArrivals);
+		this.add(this.stationDepartures);
+
+		//GET INFO
+		this.stationInfoButton = new JButton("Get Info");
+		this.stationInfoButton.setBounds((int)(WIDTH*0.1), (int)(HEIGHT*0.775), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
+		this.stationInfoButton.addActionListener(this);
+		this.add(this.stationInfoButton);
+	}
 }
 	

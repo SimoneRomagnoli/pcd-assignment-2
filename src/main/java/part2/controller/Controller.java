@@ -3,6 +3,8 @@ package part2.controller;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import part2.api.client.TrainAPIWebClient;
+import part2.api.model.Station;
+import part2.api.model.StationStatus;
 import part2.api.model.Train;
 import part2.api.model.Travel;
 import part2.view.View;
@@ -33,5 +35,12 @@ public class Controller implements InputListener {
         Future<Train> train = this.client.getRealTimeTrainInfo(stationCode, trainCode);
         train.onSuccess(res -> System.out.println(res.toString()));
         System.out.println("Real time train info request submitted");
+    }
+
+    @Override
+    public void stationInfo(String stationCode, StationStatus.ArrivalsOrDepartures arrivalsOrDepartures) {
+        Future<Station> station = this.client.getRealTimeStationInfo(stationCode, arrivalsOrDepartures);
+        station.onSuccess(res -> System.out.println(res.toString()));
+        System.out.println("Real time station info request submitted");
     }
 }
