@@ -1,10 +1,8 @@
-package part3.TestMultipleSubscribers;
+package part3;
 
-import org.apache.pdfbox.multipdf.PageExtractor;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
 import org.apache.pdfbox.text.PDFTextStripper;
-import part1.model.task.SplitFilterCount;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +60,7 @@ public class Operations {
 
             final PDFTextStripper stripper = new PDFTextStripper();
             int nPages = doc.getNumberOfPages();
-            for (int i = FIRST_PAGE; i < nPages; i++) {
+            for (int i = FIRST_PAGE; i <= nPages; i++) {
                 stripper.setStartPage(i);
                 stripper.setEndPage(i);
                 String chunk =  stripper.getText(doc);

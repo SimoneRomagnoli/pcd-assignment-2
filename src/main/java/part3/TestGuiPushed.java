@@ -2,8 +2,6 @@ package part3;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import io.reactivex.rxjava3.subjects.PublishSubject;
-import part3.TestMultipleSubscribers.Operations;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -45,7 +43,7 @@ public class TestGuiPushed extends JFrame {
         TestGuiPushed gui = new TestGuiPushed();
 
 
-        File directory = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/resLong");
+        File directory = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/resMed");
         List<File> documents = Arrays.asList(Objects.requireNonNull(directory.listFiles()));
 
 

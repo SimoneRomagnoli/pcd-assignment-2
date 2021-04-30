@@ -2,7 +2,6 @@ package part3;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import part3.TestMultipleSubscribers.Operations;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -56,7 +55,7 @@ public class TestGuiPulling extends JFrame {
 
     public static void main(String[] args) {
 
-        File directory = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/resLong");
+        File directory = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/resMed");
         List<File> documents = Arrays.asList(Objects.requireNonNull(directory.listFiles()));
 
         System.out.println("File extracted form the directory, number of files = " + documents.size());
