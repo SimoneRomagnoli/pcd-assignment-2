@@ -10,14 +10,14 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Operations {
+public class FlowableOperations {
 
     private static final int FIRST_PAGE = 1;
     private static final int CHUNK_SIZE = 10;
     final static String REGEX = "[^a-zA-Z0-9]";
     private static List<String> ignoredWords;
 
-    public Operations(List<String> ignoredWords) throws IOException {
+    public FlowableOperations(List<String> ignoredWords) throws IOException {
         this.ignoredWords = ignoredWords;
     }
 
@@ -91,6 +91,9 @@ public class Operations {
     }
 
     public static String[] split(String page) {
+        final String[] words = page.split(REGEX);
+
+
         return page.split(REGEX);
     }
 

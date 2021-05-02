@@ -1,12 +1,10 @@
 package part3.model;
 
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import part3.controller.Controller;
-import part3.model.Operations;
-import part3.controller.Flag;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,53 +20,66 @@ public class Model{
     private final List<File> documents;
     private final List<String> ignoredWords;
     private final Controller controller;
-    private Operations operations;
+    private FlowableOperations operations;
     Map<String, Integer> map;
-
-
-    private Flag flag;
+    Map<String, Integer> beforeTop;
+    private Disposable disposable;
     private int limitWords;
 
-    public Model(Flag flag, Controller controller) {
+
+
+    public Model(Controller controller, File dir, File wordsFile, int limitWords) {
         this.controller = controller;
         this.map = new HashMap<>();
         this.ignoredWords = new ArrayList<>();
-        this.flag = flag;
         this.documents = new ArrayList<>();
+        try {
+            this.documents.addAll(Arrays.asList(Objects.requireNonNull(dir.listFiles())));
+            this.ignoredWords.addAll(Files.readAllLines(wordsFile.toPath()));
+            this.limitWords = limitWords;
+            this.operations = new FlowableOperations(ignoredWords);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Method called at the beginning of computation:
      * starts the main tasks via Executors.
      */
-    public void go() {
-
-        final long start = System.currentTimeMillis();
+    public void startFlowableComputation() {
 
         Flowable<File> source = Flowable.fromIterable(documents);
 
-        source.flatMap(s->Flowable.just(s)
+       disposable = source.flatMap(s->Flowable.just(s)
                 .subscribeOn(Schedulers.computation())
+                .observeOn(Schedulers.io())
                 //.map(Operations::loadAndStrip)
-                .map(Operations::loadAndGetChuncks)
+                .map(FlowableOperations::loadAndGetChuncks)
                 .flatMap(Flowable::fromIterable)
-                .map(Operations::split)
-                .map(Operations::filter)
-                .map(Operations::count)
-        ).subscribe(v -> {
-            Operations.log("creating the map");
-            v.forEach((s, c)-> {
+               .observeOn(Schedulers.computation())
+                .map(FlowableOperations::split)
+                .map(FlowableOperations::filter)
+                .map(FlowableOperations::count)
+       ).subscribe(localMap -> {
+            FlowableOperations.log("creating the map");
+            localMap.forEach((s, c)-> {
                 map.merge(s, c, Integer::sum);
-                controller.update(getElaboratedWords(), getTop());
+                if(!getTop().equals(beforeTop)){
+                    beforeTop = getTop();
+                    controller.update(getElaboratedWords(), getTop());
+                }
             });
-        });
-
-        //this.flag.set();
-        System.out.println("Time elapsed: "+(System.currentTimeMillis()-start)+" ms.");
+        }, error -> {
+                   FlowableOperations.log("an error occurred" + error.getMessage());
+               },
+               () -> {
+                    controller.done();
+               });
     }
 
+
     public synchronized Map<String, Integer> getTop(){
-        System.out.println("updating the view");
         return map.keySet()
                 .stream()
                 .sorted((a, b) -> map.get(b) - map.get(a))
@@ -80,22 +91,8 @@ public class Model{
         return 10; //da cambiare ovviamente
     }
 
-    /**
-     * Setting main arguments of the program
-     * when the computation starts.
-     *
-     * @param pdfDirectory
-     * @param ignoredWordsFile     * @param limitWords
-     * @throws IOException
-     */
-    public void setArgs(final File pdfDirectory, final File ignoredWordsFile, final int limitWords) {
-        try {
-            this.documents.addAll(Arrays.asList(Objects.requireNonNull(pdfDirectory.listFiles())));
-            this.ignoredWords.addAll(Files.readAllLines(ignoredWordsFile.toPath()));
-            this.limitWords = limitWords;
-            this.operations = new Operations(ignoredWords);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+    public void stop() {
+        disposable.dispose();
     }
 }

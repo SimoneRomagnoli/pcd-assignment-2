@@ -92,7 +92,10 @@ public class ViewFrame extends JFrame implements ActionListener {
 			File dir = new File(pdfDirectory.getText());
 			File configFile = new File(excludeWords.getText());
 			int limitWords = Integer.parseInt(limitOfWords.getText());
+			SwingUtilities.invokeLater(
+					()->this.results.setText(""));
 			this.notifyStarted(dir, configFile, limitWords);
+
 			//this.state.setText("Processing...");
 
 			this.startButton.setEnabled(false);
@@ -130,13 +133,10 @@ public class ViewFrame extends JFrame implements ActionListener {
 		});
 		if(!occurrences.isEmpty()) {
 			String acc = "";
-//			dataset.clear();
+			//dataset.clear();
 			for (String word : occurrences.keySet().stream().sorted((a, b) -> occurrences.get(b) - occurrences.get(a)).collect(Collectors.toList())) {
 				acc += word + " - " + occurrences.get(word) + " times \n";
-//				SwingUtilities.invokeLater(() -> {
-//
-//					//this.dataset.addValue(occurrences.get(word), "row", word);
-//				});
+					//this.dataset.addValue(occurrences.get(word), "row", word);
 			}
 			final String finalAcc = acc;
 
