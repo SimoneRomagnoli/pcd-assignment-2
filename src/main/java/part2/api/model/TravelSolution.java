@@ -75,9 +75,7 @@ public class TravelSolution implements Travel {
     }
 
     @Override
-    public int getScales() {
-        return this.trains.size()-1;
-    }
+    public int getScales() { return this.trains.size()-1; }
 
     @Override
     public List<String> getTrainList() {

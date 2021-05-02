@@ -65,7 +65,9 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private JLabel travelTableLabel;
 	private JScrollPane travelTableContainer;
 	private JTable travelTable;
-	private String [][] travelTableRows = {};
+
+	//MONITORING
+	private JButton travelTableMonitorButton;
 	
 	private InputListener listener;
 
@@ -77,6 +79,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.createTrainInfoInput();
 		this.createStationInfoInput();
 		this.createTravelOutput();
+		this.createMonitoringOutput();
 
 		this.setSize(WIDTH, HEIGHT);
 		setResizable(false);
@@ -99,16 +102,18 @@ public class ViewFrame extends JFrame implements ActionListener {
 			final int time = Integer.parseInt(this.travelFromTime.getText());
 			Future<List<Travel>> travelSolutions = this.travelSearch(origin, destination, date, time);
 			travelSolutions.onSuccess(travels -> {
-				DefaultTableModel model = (DefaultTableModel) this.travelTable.getModel();
-				IntStream.generate(() -> 0).limit(model.getRowCount()).forEach(model::removeRow);
-				for(Travel travel:travels) {
-					model.addRow(new String[] {
-							travel.getDepartureTime()+"    "+travel.getDepartureDate(),
-							travel.getArrivalTime()+"    "+travel.getArrivalDate(),
-							String.valueOf(travel.getScales()),
-							travel.getTrainList().toString().replace("[", "").replace("]", "")
-					});
-				}
+				SwingUtilities.invokeLater( () -> {
+					DefaultTableModel model = (DefaultTableModel) this.travelTable.getModel();
+					IntStream.generate(() -> 0).limit(model.getRowCount()).forEach(model::removeRow);
+					for(Travel travel:travels) {
+						model.addRow(new String[] {
+								travel.getDepartureTime()+"    "+travel.getDepartureDate(),
+								travel.getArrivalTime()+"    "+travel.getArrivalDate(),
+								String.valueOf(travel.getScales()),
+								travel.getTrainList().toString().replace("[", "").replace("]", "")
+						});
+					}
+				});
 			});
 		}
 		if(this.trainInfoButton.equals(src)) {
@@ -271,7 +276,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.travelTable = new JTable(new DefaultTableModel(TABLE_COLUMNS, 0));
 		this.travelTableContainer = new JScrollPane(this.travelTable);
 		final int panelWidth = (int)(WIDTH*0.6);
-		this.travelTableContainer.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.1), panelWidth, (int)(HEIGHT*0.25));
+		this.travelTableContainer.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.1), panelWidth, (int)(HEIGHT*0.15));
 		this.travelTable.setFillsViewportHeight(true);
 		this.travelTable.getColumnModel().getColumn(0).setPreferredWidth((int)(0.2*panelWidth));
 		this.travelTable.getColumnModel().getColumn(1).setPreferredWidth((int)(0.2*panelWidth));
@@ -279,6 +284,13 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.travelTable.getColumnModel().getColumn(3).setPreferredWidth((int)(0.5*panelWidth));
 		this.travelTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		this.add(this.travelTableContainer);
+	}
+
+	private void createMonitoringOutput() {
+		this.travelTableMonitorButton = new JButton("Monitor");
+		this.travelTableMonitorButton.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.3), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
+		this.travelTableMonitorButton.addActionListener(this);
+		this.add(this.travelTableMonitorButton);
 	}
 }
 	

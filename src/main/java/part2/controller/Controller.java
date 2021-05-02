@@ -26,7 +26,7 @@ public class Controller implements InputListener {
     @Override
     public Future<List<Travel>> searchTravel(String from, String to, String date, int time) {
         Future<List<Travel>> travels = this.client.getTrainSolutions(from, to, date, time);
-        travels.onSuccess(res -> res.forEach(t -> System.out.println(t.toString())) );
+        //travels.onSuccess(res -> res.forEach(t -> System.out.println(t.toString())) );
         System.out.println("Search travel request submitted");
         return travels;
     }
