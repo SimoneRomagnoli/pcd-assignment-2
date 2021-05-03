@@ -1,10 +1,7 @@
 package part2.view;
 
 import io.vertx.core.Future;
-import part2.api.model.Station;
-import part2.api.model.StationStatus;
-import part2.api.model.Train;
-import part2.api.model.Travel;
+import part2.api.model.*;
 import part2.controller.InputListener;
 
 import javax.swing.*;
@@ -31,6 +28,8 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private static final int COLS = 10;
 
 	private static final Object[] SOLUTIONS_TABLE_COLUMNS = { "Departure", "Arrival", "Scales", "Trains" };
+
+	private static final Object[] DETAILS_TABLE_COLUMNS = { "Train" , "From", "To", "Departure", "Arrival", "Duration" };
 
 	private static final Object[] MONITOR_TABLE_COLUMNS = { "Train", "From", "To", "Date", "Departure", "Arrival", "Delay" };
 
@@ -69,6 +68,12 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private JTable travelTable;
 	private List<Travel> currentTravels;
 
+	//SOLUTION DETAILS
+	private JButton detailsButton;
+	private JLabel detailsTravelLabel;
+	private JScrollPane detailsTableContainer;
+	private JTable detailsTable;
+
 	//MONITORING
 	private JButton travelTableMonitorButton;
 	private JLabel monitorTravelLabel;
@@ -87,6 +92,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.createStationInfoInput();
 		this.createTravelOutput();
 		this.createMonitoringOutput();
+		this.createDetailOutput();
 
 		this.setSize(WIDTH, HEIGHT);
 		setResizable(false);
@@ -122,6 +128,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 						});
 					}
 
+					this.detailsButton.setEnabled(true);
 					this.travelTableMonitorButton.setEnabled(true);
 				});
 			});
@@ -141,6 +148,21 @@ public class ViewFrame extends JFrame implements ActionListener {
 			this.monitorTravelLabel.setText("Monitoring solution "+monitoredTravel.getSolutionId());
 			System.out.println(monitoredTravel.getSolutionId());
 			//for(monitoredTravel.)
+		}
+		if(this.detailsButton.equals(src)) {
+			List<TravelDetails> details = this.currentTravels.get(this.travelTable.getSelectedRow()).getDetails().get();
+			DefaultTableModel model = (DefaultTableModel) this.detailsTable.getModel();
+			IntStream.generate(() -> 0).limit(model.getRowCount()).forEach(model::removeRow);
+			for(TravelDetails detail: details) {
+				model.addRow(new String[] {
+						detail.getIdentifier(),
+						detail.getDepartureStation(),
+						detail.getArrivalStation(),
+						detail.getDepartureTime(),
+						detail.getArrivalTime(),
+						detail.getDuration()
+				});
+			}
 		}
 	}
 
@@ -292,21 +314,21 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private void createMonitoringOutput() {
 		//MONITOR BUTTON
 		this.travelTableMonitorButton = new JButton("Monitor");
-		this.travelTableMonitorButton.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.3), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
+		this.travelTableMonitorButton.setBounds((int)(WIDTH*0.5), (int)(HEIGHT*0.3), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
 		this.travelTableMonitorButton.addActionListener(this);
 		this.add(this.travelTableMonitorButton);
 		this.travelTableMonitorButton.setEnabled(false);
 
 		//TITLE
 		this.monitorTravelLabel = new JLabel("Monitoring off");
-		this.monitorTravelLabel.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.35), (int)(WIDTH*0.4), (int)(HEIGHT*0.05));
+		this.monitorTravelLabel.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.6), (int)(WIDTH*0.4), (int)(HEIGHT*0.05));
 		this.add(this.monitorTravelLabel);
 
 		//TABLE
 		this.monitorTable = new JTable(new DefaultTableModel(MONITOR_TABLE_COLUMNS, 0));
 		this.monitorTableContainer = new JScrollPane(this.monitorTable);
 		final int panelWidth = (int)(WIDTH*0.6);
-		this.monitorTableContainer.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.4), panelWidth, (int)(HEIGHT*0.15));
+		this.monitorTableContainer.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.65), panelWidth, (int)(HEIGHT*0.15));
 		this.monitorTable.setFillsViewportHeight(true);
 		this.monitorTable.getColumnModel().getColumn(0).setPreferredWidth((int)(0.2*panelWidth));
 		this.monitorTable.getColumnModel().getColumn(1).setPreferredWidth((int)(0.2*panelWidth));
@@ -317,6 +339,42 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.monitorTable.getColumnModel().getColumn(6).setPreferredWidth((int)(0.1*panelWidth));
 		this.monitorTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		this.add(this.monitorTableContainer);
+
+		//STOP
+		this.monitorStopButton = new JButton("Stop");
+		this.monitorStopButton.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.85), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
+		this.monitorStopButton.addActionListener(this);
+		this.add(this.monitorStopButton);
+		this.monitorStopButton.setEnabled(false);
+	}
+
+	private void createDetailOutput() {
+		//DETAILS BUTTON
+		this.detailsButton = new JButton("Open detail");
+		this.detailsButton.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.3), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
+		this.detailsButton.addActionListener(this);
+		this.add(this.detailsButton);
+		this.detailsButton.setEnabled(false);
+
+		//TITLE
+		this.detailsTravelLabel = new JLabel("Details:");
+		this.detailsTravelLabel.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.35), (int)(WIDTH*0.4), (int)(HEIGHT*0.05));
+		this.add(this.detailsTravelLabel);
+
+		//TABLE
+		this.detailsTable = new JTable(new DefaultTableModel(DETAILS_TABLE_COLUMNS, 0));
+		this.detailsTableContainer = new JScrollPane(this.detailsTable);
+		final int panelWidth = (int)(WIDTH*0.6);
+		this.detailsTableContainer.setBounds((int)(WIDTH*0.375), (int)(HEIGHT*0.4), panelWidth, (int)(HEIGHT*0.15));
+		this.detailsTable.setFillsViewportHeight(true);
+		this.detailsTable.getColumnModel().getColumn(0).setPreferredWidth((int)(0.2*panelWidth));
+		this.detailsTable.getColumnModel().getColumn(1).setPreferredWidth((int)(0.2*panelWidth));
+		this.detailsTable.getColumnModel().getColumn(2).setPreferredWidth((int)(0.2*panelWidth));
+		this.detailsTable.getColumnModel().getColumn(3).setPreferredWidth((int)(0.2*panelWidth));
+		this.detailsTable.getColumnModel().getColumn(4).setPreferredWidth((int)(0.2*panelWidth));
+		this.detailsTable.getColumnModel().getColumn(5).setPreferredWidth((int)(0.2*panelWidth));
+		this.detailsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		this.add(this.detailsTableContainer);
 	}
 }
 	
