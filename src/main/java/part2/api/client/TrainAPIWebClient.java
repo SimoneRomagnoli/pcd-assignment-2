@@ -55,18 +55,28 @@ public class TrainAPIWebClient {
                 })
                 .onComplete(asyncResult -> {
                     //System.out.println("Promise completed with: " + asyncResult.result());
-                    travels.complete(
-                            IntStream
+
+                     List<Travel> completeTravels = IntStream
                                     .range(0, asyncResult.result().size())
                                     .boxed()
                                     .map(i -> new TravelSolution(asyncResult.result().getJsonObject(i)))
-                                    .collect(Collectors.toList())
-                    );
+                                    .collect(Collectors.toList());
+
+                    for(Travel travel:completeTravels) {
+                        Promise<JsonArray> jsonDetails = this.requests.getRequestForSolutionDetail(travel.getSolutionId());
+                        jsonDetails.future()
+                                .onFailure(err -> {
+                                    System.out.println("Something went wrong in JSON response: " + err.getMessage());
+                                    //jsonDetails.fail(err.getMessage());
+                                })
+                                .onSuccess(travel::addDetails);
+                    }
+
+                    travels.complete(completeTravels);
                 });
 
         return travels.future();
     }
-
 
     /**
      *
