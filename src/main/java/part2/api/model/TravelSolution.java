@@ -1,5 +1,6 @@
 package part2.api.model;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.*;
@@ -27,6 +28,7 @@ public class TravelSolution implements Travel {
     private final Date departureTime;
     private final Date arrivalTime;
     private final List<String> trains;
+    private Optional<List<TravelDetails>> details;
 
     public TravelSolution(JsonObject json) {
         this.solutionId = json.getString(SOLUTION_ID);
@@ -39,6 +41,7 @@ public class TravelSolution implements Travel {
                 .boxed()
                 .map(i -> json.getJsonArray(TRAIN_LIST).getJsonObject(i).getString(TRAIN_ID))
                 .collect(Collectors.toList());
+        this.details = Optional.empty();
     }
 
     @Override
@@ -85,6 +88,22 @@ public class TravelSolution implements Travel {
     @Override
     public List<String> getTrainListCodes() {
         return getTrainList().stream().map(s -> s.replaceAll("[^\\d.]", "")).collect(Collectors.toList());
+    }
+
+    @Override
+    public void addDetails(JsonArray details) {
+        this.details = Optional.of(
+                IntStream
+                        .range(0, details.size())
+                        .boxed()
+                        .map(i -> new TravelDetails(details.getJsonObject(i)))
+                        .collect(Collectors.toList())
+                );
+    }
+
+    @Override
+    public Optional<List<TravelDetails>> getDetails() {
+        return this.details;
     }
 
     @Override

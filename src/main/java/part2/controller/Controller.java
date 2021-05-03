@@ -34,7 +34,7 @@ public class Controller implements InputListener {
     @Override
     public Future<Train> trainInfo(String trainCode, String stationCode) {
         Future<Train> train = this.client.getRealTimeTrainInfo(stationCode, trainCode);
-        //train.onSuccess(res -> System.out.println(res.toString()));
+        train.onSuccess(res -> System.out.println(res.toString()));
         System.out.println("Real time train info request submitted");
         return train;
     }
@@ -42,7 +42,7 @@ public class Controller implements InputListener {
     @Override
     public Future<Station> stationInfo(String stationCode, StationStatus.ArrivalsOrDepartures arrivalsOrDepartures) {
         Future<Station> station = this.client.getRealTimeStationInfo(stationCode, arrivalsOrDepartures);
-        //station.onSuccess(res -> System.out.println(res.toString()));
+        station.onSuccess(res -> System.out.println(res.toString()));
         System.out.println("Real time station info request submitted");
         return station;
     }

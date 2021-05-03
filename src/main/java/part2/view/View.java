@@ -23,14 +23,6 @@ public class View {
         	frame.setVisible(true);
         });
     }
-	
-	public void update() {
-		frame.update();
-	}
-	
-	public void done() {
-		frame.done();
-	}
 
 }
 	
