@@ -1,4 +1,4 @@
-package part3;
+package part3.test;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.schedulers.Schedulers;

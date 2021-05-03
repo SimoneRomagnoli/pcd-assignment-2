@@ -1,24 +1,26 @@
-package part3;
+package part3.test;
 
-import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
 import org.apache.pdfbox.text.PDFTextStripper;
-import part1.model.task.Strip;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-public class TestReactive {
+public class TestReactiveSubject {
 
     final static String REGEX = "[^a-zA-Z0-9]";
     private static File ignoredWordsFile = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/ignoredWords.txt");
     private static List<String> ignoredWords = Collections.emptyList();
+
+
+    static private void log(String msg) {
+        System.out.println("[" + Thread.currentThread().getName() + "] " + msg);
+    }
 
     static {
         try {
@@ -57,6 +59,7 @@ public class TestReactive {
                 occurrences.put(word, 1);
             }
         }
+        log("counting");
         return occurrences;
     }
 
@@ -66,24 +69,61 @@ public class TestReactive {
 
     public static void main(String[] args) throws IOException {
 
+        Map<String, Integer> map = new HashMap<>();
+
+
         File directory = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/res");
         List<File> documents = Arrays.asList(Objects.requireNonNull(directory.listFiles()));
 
         System.out.println("File extracted form the directory, number of files = " +  documents.size());
 
-        Observable<File> source = Observable.fromIterable(documents);
 
-        source.map(TestReactive::loadAndStrip)
-           .map(TestReactive::split)
-          .map(TestReactive::filter)
-          .map(TestReactive::count)
-          //.sorted()    // qui vorrei ordinare in base al conteggio delle parole
-          //.limit(1)  // questa sarebbe da fare ma è un metodo degli stream, l'alternativa è take
-           .subscribe(m-> {
-           m.forEach((s,c)->{
-               System.out.println(s + " " + c);
-           });
-        });
+        PublishSubject<File> source = PublishSubject.<File>create();
 
+        //Questo mi serve perchè vorrei combinare la publishSubject con la subscribe on
+//        Flowable<File> flow = source.toFlowable(BackpressureStrategy.BUFFER);
+
+        log("subscribing.");
+
+        source
+                //se io metto questa non va
+//                .observeOn(Schedulers.computation())
+                .map(TestReactiveSubject::loadAndStrip)
+                .map(TestReactiveSubject::split)
+                .map(TestReactiveSubject::filter)
+                .map(TestReactiveSubject::count)
+                .subscribe(s->{
+                    System.out.println("diobioa");
+                });
+                //
+
+
+
+
+
+        log("generating.");
+
+
+
+       // Flowable<File> source = Flowable.fromIterable(documents);
+
+        for(File f : directory.listFiles()) {
+            source.onNext(f);
+        }
+
+
+        source.onComplete();
+
+
+
+
+        System.out.println("resulting map: ");
+        map
+        .keySet()
+        .stream()
+        .sorted((a, b) -> map.get(b) - map.get(a))
+        .limit(5)
+        .collect(Collectors.toMap(k -> k, map::get))
+                .forEach((k,v)-> log(k + " " + v));
     }
 }

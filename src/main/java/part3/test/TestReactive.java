@@ -1,7 +1,6 @@
-package part3;
+package part3.test;
 
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Observable;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -12,16 +11,11 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TestReactiveParallel {
+public class TestReactive {
 
     final static String REGEX = "[^a-zA-Z0-9]";
     private static File ignoredWordsFile = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/ignoredWords.txt");
     private static List<String> ignoredWords = Collections.emptyList();
-
-
-    static private void log(String msg) {
-        System.out.println("[" + Thread.currentThread().getName() + "] " + msg);
-    }
 
     static {
         try {
@@ -35,7 +29,6 @@ public class TestReactiveParallel {
     private static String loadAndStrip(File f ) throws IOException {
         PDDocument doc = PDDocument.load(f);
         AccessPermission ap = doc.getCurrentAccessPermission();
-        log("stripping");
         if (!ap.canExtractContent()) {
             throw new IOException("You do not have permission to extract text");
         } else {
@@ -61,7 +54,6 @@ public class TestReactiveParallel {
                 occurrences.put(word, 1);
             }
         }
-        log("counting");
         return occurrences;
     }
 
@@ -71,36 +63,24 @@ public class TestReactiveParallel {
 
     public static void main(String[] args) throws IOException {
 
-        Map<String, Integer> map = new HashMap<>();
-
-
         File directory = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/res");
         List<File> documents = Arrays.asList(Objects.requireNonNull(directory.listFiles()));
 
-        System.out.println("File extracted form the directory, number of files = " + documents.size());
+        System.out.println("File extracted form the directory, number of files = " +  documents.size());
 
-        Flowable<File> source = Flowable.fromIterable(documents);
+        Observable<File> source = Observable.fromIterable(documents);
 
-        source.flatMap(s -> Flowable.just(s)
-                .subscribeOn(Schedulers.computation())
-                .map(TestReactiveParallel::loadAndStrip)
-                .map(TestReactiveParallel::split)
-                .map(TestReactiveParallel::filter)
-                .map(TestReactiveParallel::count)
-                .observeOn(Schedulers.single())
-                .map(subMap->{
-                    subMap.forEach((k,c)->{
-                        map.merge(k, c, Integer::sum);
-                    });
-                    return map;
-                })
-                .sorted((a, b) -> map.get(b) - map.get(a))
-        ).blockingSubscribe(m->m.forEach((k,v)->{
-            log(k + " "+ v);
-        }));
-
-
-        System.out.println(map.size() + " DIOPORCO");
+        source.map(TestReactive::loadAndStrip)
+           .map(TestReactive::split)
+          .map(TestReactive::filter)
+          .map(TestReactive::count)
+          //.sorted()    // qui vorrei ordinare in base al conteggio delle parole
+          //.limit(1)  // questa sarebbe da fare ma è un metodo degli stream, l'alternativa è take
+           .subscribe(m-> {
+           m.forEach((s,c)->{
+               System.out.println(s + " " + c);
+           });
+        });
 
     }
 }

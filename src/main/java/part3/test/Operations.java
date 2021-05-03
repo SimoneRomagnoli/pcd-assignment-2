@@ -1,4 +1,4 @@
-package part3;
+package part3.test;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;

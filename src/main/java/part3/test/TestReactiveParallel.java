@@ -1,9 +1,7 @@
-package part3;
+package part3.test;
 
-import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -14,7 +12,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TestReactiveSubject {
+public class TestReactiveParallel {
 
     final static String REGEX = "[^a-zA-Z0-9]";
     private static File ignoredWordsFile = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/ignoredWords.txt");
@@ -37,6 +35,7 @@ public class TestReactiveSubject {
     private static String loadAndStrip(File f ) throws IOException {
         PDDocument doc = PDDocument.load(f);
         AccessPermission ap = doc.getCurrentAccessPermission();
+        log("stripping");
         if (!ap.canExtractContent()) {
             throw new IOException("You do not have permission to extract text");
         } else {
@@ -78,55 +77,30 @@ public class TestReactiveSubject {
         File directory = new File("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/res");
         List<File> documents = Arrays.asList(Objects.requireNonNull(directory.listFiles()));
 
-        System.out.println("File extracted form the directory, number of files = " +  documents.size());
+        System.out.println("File extracted form the directory, number of files = " + documents.size());
+
+        Flowable<File> source = Flowable.fromIterable(documents);
+
+        source.flatMap(s -> Flowable.just(s)
+                .subscribeOn(Schedulers.computation())
+                .map(TestReactiveParallel::loadAndStrip)
+                .map(TestReactiveParallel::split)
+                .map(TestReactiveParallel::filter)
+                .map(TestReactiveParallel::count)
+                .observeOn(Schedulers.single())
+                .map(subMap->{
+                    subMap.forEach((k,c)->{
+                        map.merge(k, c, Integer::sum);
+                    });
+                    return map;
+                })
+                .sorted((a, b) -> map.get(b) - map.get(a))
+        ).blockingSubscribe(m->m.forEach((k,v)->{
+            log(k + " "+ v);
+        }));
 
 
-        PublishSubject<File> source = PublishSubject.<File>create();
+        System.out.println(map.size() + " DIOPORCO");
 
-        //Questo mi serve perchè vorrei combinare la publishSubject con la subscribe on
-//        Flowable<File> flow = source.toFlowable(BackpressureStrategy.BUFFER);
-
-        log("subscribing.");
-
-        source
-                //se io metto questa non va
-//                .observeOn(Schedulers.computation())
-                .map(TestReactiveSubject::loadAndStrip)
-                .map(TestReactiveSubject::split)
-                .map(TestReactiveSubject::filter)
-                .map(TestReactiveSubject::count)
-                .subscribe(s->{
-                    System.out.println("diobioa");
-                });
-                //
-
-
-
-
-
-        log("generating.");
-
-
-
-       // Flowable<File> source = Flowable.fromIterable(documents);
-
-        for(File f : directory.listFiles()) {
-            source.onNext(f);
-        }
-
-
-        source.onComplete();
-
-
-
-
-        System.out.println("resulting map: ");
-        map
-        .keySet()
-        .stream()
-        .sorted((a, b) -> map.get(b) - map.get(a))
-        .limit(5)
-        .collect(Collectors.toMap(k -> k, map::get))
-                .forEach((k,v)-> log(k + " " + v));
     }
 }

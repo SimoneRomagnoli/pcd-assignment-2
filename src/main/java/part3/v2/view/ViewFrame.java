@@ -1,17 +1,19 @@
-package part3.view;
+package part3.v2.view;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
-import part3.controller.InputListener;
+import part3.v2.InputListener;
+import part3.v2.model.FlowableOperations;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -42,12 +44,11 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private JButton stopButton;
 	private DefaultCategoryDataset dataset =new DefaultCategoryDataset();
 	
-	private ArrayList<InputListener> listeners;
+	private InputListener listener;
 
 	public ViewFrame(){
 		super("View");
 		setSize(600,400);
-		listeners = new ArrayList<>();
 
 		this.createDirectoryInput();
 		this.createExcludedInput();
@@ -67,8 +68,8 @@ public class ViewFrame extends JFrame implements ActionListener {
 	}
 	
 
-	public void addListener(InputListener l){
-		listeners.add(l);
+	public void setListener(InputListener l){
+		this.listener = l;
 	}
 	
 	public void actionPerformed(ActionEvent ev){
@@ -94,7 +95,11 @@ public class ViewFrame extends JFrame implements ActionListener {
 			int limitWords = Integer.parseInt(limitOfWords.getText());
 			SwingUtilities.invokeLater(
 					()->this.results.setText(""));
-			this.notifyStarted(dir, configFile, limitWords);
+			try {
+				this.notifyStarted(dir, configFile, limitWords);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
 			//this.state.setText("Processing...");
 
@@ -115,34 +120,29 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 	}
 
-	private void notifyStarted(File dir, File wordsFile, int limitWords){
-		for (InputListener l: listeners){
-			l.started(dir, wordsFile, limitWords);
-		}
+	private void notifyStarted(File dir, File wordsFile, int limitWords) throws IOException {
+		this.listener.start(dir,wordsFile,limitWords);
 	}
 	
 	private void notifyStopped(){
-		for (InputListener l: listeners){
-			l.stopped();
-		}
+		this.listener.stop();
 	}
 	
-	public void update(final int words, final Map<String, Integer> occurrences) {
+	public void update(final long words, final Map<String, Integer> occurrences) {
 		SwingUtilities.invokeLater(() -> {
 			this.elaboratedWords.setText(""+words);
 		});
 		if(!occurrences.isEmpty()) {
 			String acc = "";
-			dataset.clear();
+//			dataset.clear();
 			for (String word : occurrences.keySet().stream().sorted((a, b) -> occurrences.get(b) - occurrences.get(a)).collect(Collectors.toList())) {
 				acc += word + " - " + occurrences.get(word) + " times \n";
-					this.dataset.addValue(occurrences.get(word), "row", word);
+//					this.dataset.addValue(occurrences.get(word), "row", word);
 			}
 			final String finalAcc = acc;
 
-			SwingUtilities.invokeLater(() -> {
-				this.results.setText(finalAcc);
-			});
+			this.results.setText(finalAcc);
+
 		}
 	}
 	
