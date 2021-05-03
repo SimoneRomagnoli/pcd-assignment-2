@@ -55,7 +55,6 @@ public class TrainAPIWebClient {
                 })
                 .onComplete(asyncResult -> {
                     //System.out.println("Promise completed with: " + asyncResult.result());
-
                      List<Travel> completeTravels = IntStream
                                     .range(0, asyncResult.result().size())
                                     .boxed()

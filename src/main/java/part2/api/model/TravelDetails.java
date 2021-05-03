@@ -2,6 +2,9 @@ package part2.api.model;
 
 import io.vertx.core.json.JsonObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class TravelDetails {
 
     private static final String IDENTIFIER = "trainidentifier";
@@ -14,16 +17,16 @@ public class TravelDetails {
     private final String identifier;
     private final String departureStation;
     private final String arrivalStation;
-    private final String departureTime;
-    private final String arrivalTime;
+    private final Date departureTime;
+    private final Date arrivalTime;
     private final String duration;
 
     public TravelDetails(JsonObject details) {
         this.identifier = details.getString(IDENTIFIER);
         this.departureStation = details.getString(DEPARTURE_STATION);
         this.arrivalStation = details.getString(ARRIVAL_STATION);
-        this.departureTime = details.getString(DEPARTURE_TIME);
-        this.arrivalTime = details.getString(ARRIVAL_TIME);
+        this.departureTime = new Date(details.getLong(DEPARTURE_TIME));
+        this.arrivalTime = new Date(details.getLong(ARRIVAL_TIME));
         this.duration = details.getString(DURATION);
     }
 
@@ -40,7 +43,7 @@ public class TravelDetails {
     }
 
     public String getDepartureTime() {
-        return this.departureTime;
+        return new SimpleDateFormat(TravelSolution.HOUR_FORMAT).format(this.departureTime);
     }
 
     public String getArrivalStation() {
@@ -48,7 +51,7 @@ public class TravelDetails {
     }
 
     public String getArrivalTime() {
-        return this.arrivalTime;
+        return new SimpleDateFormat(TravelSolution.HOUR_FORMAT).format(this.arrivalTime);
     }
 
     public String getDuration() {
