@@ -1,6 +1,8 @@
 package part1.controller;
 
+import part1.model.ElaboratedWordsMonitor;
 import part1.model.Model;
+import part1.model.OccurrencesMonitor;
 import part1.view.View;
 import part1.view.Viewer;
 
@@ -33,11 +35,11 @@ public class Controller implements InputListener {
 
 		this.executor = new ForkJoinPool(N_THREADS);
 
-		final Model model = new Model(this.stopFlag, dir, wordsFile, limitWords, this.executor);
+		final OccurrencesMonitor occurrencesMonitor = new OccurrencesMonitor(limitWords);
+		final ElaboratedWordsMonitor wordsMonitor = new ElaboratedWordsMonitor();
 
-		final Viewer viewer = new Viewer(this.view, this.stopFlag, this.executor);
-		viewer.setOccurrencesMonitor(model.getOccurrencesMonitor());
-		viewer.setElaboratedWordMonitor(model.getElaboratedWordsMonitor());
+		final Model model = new Model(this.stopFlag, dir, wordsFile, this.executor, occurrencesMonitor, wordsMonitor);
+		final Viewer viewer = new Viewer(this.view, this.stopFlag, this.executor, occurrencesMonitor, wordsMonitor);
 
 		this.executor.submit(model);
 		this.executor.submit(viewer);

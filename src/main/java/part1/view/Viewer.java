@@ -11,15 +11,17 @@ public class Viewer extends RecursiveTask<Void> {
 
 	private final ForkJoinPool executor;
 
-	private OccurrencesMonitor occurrencesMonitor;
-	private ElaboratedWordsMonitor wordsMonitor;
-	private View view;
-	private Flag done;
+	private final OccurrencesMonitor occurrencesMonitor;
+	private final ElaboratedWordsMonitor wordsMonitor;
+	private final View view;
+	private final Flag done;
 	
-	public Viewer(View view, Flag done, ForkJoinPool executor) {
+	public Viewer(View view, Flag done, ForkJoinPool executor, OccurrencesMonitor occurrencesMonitor, ElaboratedWordsMonitor wordsMonitor) {
 		this.view = view;
 		this.done = done;
 		this.executor = executor;
+		this.occurrencesMonitor = occurrencesMonitor;
+		this.wordsMonitor = wordsMonitor;
 	}
 
 	@Override
@@ -36,13 +38,5 @@ public class Viewer extends RecursiveTask<Void> {
 		view.update(this.wordsMonitor.getElaboratedWords(), this.occurrencesMonitor.getOccurrences());
 		this.view.done();
 		return null;
-	}
-
-	public void setOccurrencesMonitor(OccurrencesMonitor monitor) {
-		this.occurrencesMonitor = monitor;
-	}
-
-	public void setElaboratedWordMonitor(ElaboratedWordsMonitor monitor) {
-		this.wordsMonitor = monitor;
 	}
 }

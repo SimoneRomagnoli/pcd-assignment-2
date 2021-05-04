@@ -28,7 +28,7 @@ public class Model extends RecursiveTask<Void> {
     private ElaboratedWordsMonitor wordsMonitor;
     private OccurrencesMonitor occurrencesMonitor;
 
-    public Model(final Flag flag, final File pdfDirectory, final File ignoredWordsFile, final int limitWords, final ForkJoinPool executor) {
+    public Model(final Flag flag, final File pdfDirectory, final File ignoredWordsFile, final ForkJoinPool executor, final OccurrencesMonitor occurrencesMonitor, final ElaboratedWordsMonitor wordsMonitor) {
         this.ignoredWords = new ArrayList<>();
         this.flag = flag;
         this.documents = new ArrayDeque<>();
@@ -38,8 +38,8 @@ public class Model extends RecursiveTask<Void> {
         try {
             this.documents.addAll(Arrays.asList(Objects.requireNonNull(pdfDirectory.listFiles())));
             this.ignoredWords.addAll(Files.readAllLines(ignoredWordsFile.toPath()));
-            this.occurrencesMonitor = new OccurrencesMonitor(limitWords);
-            this.wordsMonitor = new ElaboratedWordsMonitor();
+            this.occurrencesMonitor = occurrencesMonitor;
+            this.wordsMonitor = wordsMonitor;
         } catch (IOException e) {
             e.printStackTrace();
         }
