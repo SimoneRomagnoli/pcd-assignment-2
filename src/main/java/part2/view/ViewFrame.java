@@ -31,7 +31,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 	private static final Object[] DETAILS_TABLE_COLUMNS = { "Train" , "From", "To", "Departure", "Arrival", "Duration" };
 
-	private static final Object[] MONITOR_TABLE_COLUMNS = { "Train", "From", "To", "Date", "Departure", "Arrival", "Delay" };
+	private static final Object[] MONITOR_TABLE_COLUMNS = { "Train", "From", "To", "Delay", "Last Detection" };
 
 	//TRAVEL SEARCH
 	private JLabel travelLabel;
@@ -80,7 +80,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private JScrollPane monitorTableContainer;
 	private JTable monitorTable;
 	private JButton monitorStopButton;
-	
+
 	private InputListener listener;
 
 	public ViewFrame(){
@@ -143,12 +143,6 @@ public class ViewFrame extends JFrame implements ActionListener {
 			final StationStatus.ArrivalsOrDepartures arrivalsOrDepartures = this.stationArrivals.isSelected() ? StationStatus.ArrivalsOrDepartures.ARRIVALS : StationStatus.ArrivalsOrDepartures.DEPARTURES;
 			this.stationInfo(stationCode, arrivalsOrDepartures);
 		}
-		if(this.travelTableMonitorButton.equals(src) && this.travelTableMonitorButton.isEnabled()) {
-			final Travel monitoredTravel = this.currentTravels.get(this.travelTable.getSelectedRow());
-			this.monitorTravelLabel.setText("Monitoring solution "+monitoredTravel.getSolutionId());
-			System.out.println(monitoredTravel.getSolutionId());
-			//for(monitoredTravel.)
-		}
 		if(this.detailsButton.equals(src)) {
 			List<TravelDetails> details = this.currentTravels.get(this.travelTable.getSelectedRow()).getDetails().get();
 			DefaultTableModel model = (DefaultTableModel) this.detailsTable.getModel();
@@ -164,6 +158,40 @@ public class ViewFrame extends JFrame implements ActionListener {
 				});
 			}
 		}
+		if(this.travelTableMonitorButton.equals(src) && this.travelTableMonitorButton.isEnabled()) {
+			final Travel monitoredTravel = this.currentTravels.get(this.travelTable.getSelectedRow());
+			this.monitorTravelLabel.setText("Monitoring solution "+this.travelTable.getSelectedRow());
+			this.startMonitoring(monitoredTravel);
+			this.travelTableMonitorButton.setEnabled(false);
+			this.monitorStopButton.setEnabled(true);
+			List<TravelDetails> details = monitoredTravel.getDetails().get();
+			DefaultTableModel model = (DefaultTableModel) this.monitorTable.getModel();
+			IntStream.generate(() -> 0).limit(model.getRowCount()).forEach(model::removeRow);
+			for(TravelDetails detail: details) {
+				model.addRow(new String[] {
+						detail.getIdentifier(),
+						detail.getDepartureStation(),
+						detail.getArrivalStation()
+				});
+			}
+		}
+		if(this.monitorStopButton.equals(src)) {
+			this.stopMonitoring();
+			this.monitorTravelLabel.setText("Monitoring off");
+			this.monitorStopButton.setEnabled(false);
+		}
+	}
+
+	public void updateMonitoring(List<Future<Train>> trains) {
+		//TODO
+	}
+
+	private void startMonitoring(Travel travel) {
+		this.listener.startMonitoring(travel);
+	}
+
+	private void stopMonitoring() {
+		this.listener.stopMonitoring();
 	}
 
 	private Future<List<Travel>> travelSearch(String origin, String destination, String date, int time) {
@@ -335,8 +363,6 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.monitorTable.getColumnModel().getColumn(2).setPreferredWidth((int)(0.2*panelWidth));
 		this.monitorTable.getColumnModel().getColumn(3).setPreferredWidth((int)(0.2*panelWidth));
 		this.monitorTable.getColumnModel().getColumn(4).setPreferredWidth((int)(0.2*panelWidth));
-		this.monitorTable.getColumnModel().getColumn(5).setPreferredWidth((int)(0.2*panelWidth));
-		this.monitorTable.getColumnModel().getColumn(6).setPreferredWidth((int)(0.1*panelWidth));
 		this.monitorTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		this.add(this.monitorTableContainer);
 

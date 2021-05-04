@@ -1,6 +1,10 @@
 package part2.view;
 
+import io.vertx.core.Future;
+import part2.api.model.Train;
 import part2.controller.InputListener;
+
+import java.util.List;
 
 /**
  * Class representing the view part of the application.
@@ -23,6 +27,10 @@ public class View {
         	frame.setVisible(true);
         });
     }
+
+    public void update(List<Future<Train>> monitoredTrains) {
+		this.frame.updateMonitoring(monitoredTrains);
+	}
 
 }
 	
