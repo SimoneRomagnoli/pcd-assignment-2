@@ -36,7 +36,7 @@ public class Controller implements InputListener {
     @Override
     public Future<Train> trainInfo(String trainCode, String stationCode) {
         Future<Train> train = this.client.getRealTimeTrainInfo(stationCode, trainCode);
-        train.onSuccess(res -> System.out.println(res.toString()));
+        //train.onSuccess(res -> System.out.println(res.toString()));
         System.out.println("Real time train info request submitted");
         return train;
     }

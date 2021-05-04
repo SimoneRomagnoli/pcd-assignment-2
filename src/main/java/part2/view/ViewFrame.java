@@ -33,6 +33,9 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 	private static final Object[] MONITOR_TABLE_COLUMNS = { "Train", "From", "To", "Delay", "Last Detection" };
 
+	private static final int DELAY_COLUMN = 3;
+	private static final int LAST_DETECTION_COLUMN = 4;
+
 	//TRAVEL SEARCH
 	private JLabel travelLabel;
 	private JLabel travelFromLabel;
@@ -75,7 +78,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private JTable detailsTable;
 
 	//MONITORING
-	private JButton travelTableMonitorButton;
+	private JButton monitorStartButton;
 	private JLabel monitorTravelLabel;
 	private JScrollPane monitorTableContainer;
 	private JTable monitorTable;
@@ -129,7 +132,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 					}
 
 					this.detailsButton.setEnabled(true);
-					this.travelTableMonitorButton.setEnabled(true);
+					this.monitorStartButton.setEnabled(true);
 				});
 			});
 		}
@@ -158,11 +161,11 @@ public class ViewFrame extends JFrame implements ActionListener {
 				});
 			}
 		}
-		if(this.travelTableMonitorButton.equals(src) && this.travelTableMonitorButton.isEnabled()) {
+		if(this.monitorStartButton.equals(src) && this.monitorStartButton.isEnabled()) {
 			final Travel monitoredTravel = this.currentTravels.get(this.travelTable.getSelectedRow());
-			this.monitorTravelLabel.setText("Monitoring solution "+this.travelTable.getSelectedRow());
+			this.monitorTravelLabel.setText("Monitoring solution "+(this.travelTable.getSelectedRow()+1)+":");
 			this.startMonitoring(monitoredTravel);
-			this.travelTableMonitorButton.setEnabled(false);
+			this.monitorStartButton.setEnabled(false);
 			this.monitorStopButton.setEnabled(true);
 			List<TravelDetails> details = monitoredTravel.getDetails().get();
 			DefaultTableModel model = (DefaultTableModel) this.monitorTable.getModel();
@@ -179,11 +182,16 @@ public class ViewFrame extends JFrame implements ActionListener {
 			this.stopMonitoring();
 			this.monitorTravelLabel.setText("Monitoring off");
 			this.monitorStopButton.setEnabled(false);
+			this.monitorStartButton.setEnabled(true);
 		}
 	}
 
-	public void updateMonitoring(List<Future<Train>> trains) {
-		//TODO
+	public void updateMonitoring(Future<Train> futureTrain, int row) {
+		futureTrain.onSuccess(train -> {
+			DefaultTableModel model = (DefaultTableModel) this.monitorTable.getModel();
+			model.setValueAt(train.getDelayMinutes()+" minutes", row, DELAY_COLUMN);
+			model.setValueAt(train.getLastDetection(), row, LAST_DETECTION_COLUMN);
+		});
 	}
 
 	private void startMonitoring(Travel travel) {
@@ -341,11 +349,11 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 	private void createMonitoringOutput() {
 		//MONITOR BUTTON
-		this.travelTableMonitorButton = new JButton("Monitor");
-		this.travelTableMonitorButton.setBounds((int)(WIDTH*0.5), (int)(HEIGHT*0.3), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
-		this.travelTableMonitorButton.addActionListener(this);
-		this.add(this.travelTableMonitorButton);
-		this.travelTableMonitorButton.setEnabled(false);
+		this.monitorStartButton = new JButton("Monitor");
+		this.monitorStartButton.setBounds((int)(WIDTH*0.5), (int)(HEIGHT*0.3), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
+		this.monitorStartButton.addActionListener(this);
+		this.add(this.monitorStartButton);
+		this.monitorStartButton.setEnabled(false);
 
 		//TITLE
 		this.monitorTravelLabel = new JLabel("Monitoring off");

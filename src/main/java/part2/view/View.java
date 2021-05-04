@@ -28,8 +28,8 @@ public class View {
         });
     }
 
-    public void update(List<Future<Train>> monitoredTrains) {
-		this.frame.updateMonitoring(monitoredTrains);
+    public void update(Future<Train> monitoredTrain, int index) {
+		this.frame.updateMonitoring(monitoredTrain, index);
 	}
 
 }

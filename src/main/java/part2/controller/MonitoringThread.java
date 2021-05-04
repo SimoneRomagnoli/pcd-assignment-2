@@ -29,18 +29,18 @@ public class MonitoringThread extends Thread {
     public void run() {
         this.monitoring = true;
         while(monitoring) {
-            List<Future<Train>> futures = new ArrayList<>();
             for(int i = 0; i <= this.travel.getScales(); i++) {
                 final String trainCode = this.travel.getTrainListCodes().get(i);
                 final Future<String> futureStationCode = this.listener.stationCode(trainCode);
+                final int index = i;
+
                 futureStationCode.onSuccess(stationCode -> {
                     final int startIndex = stationCode.indexOf("|")+stationCode.indexOf("-")+1;
                     final String parsedCode = stationCode.substring(startIndex, startIndex+6);
-                    //System.out.println("Parsed code is "+parsedCode);
-                    futures.add(this.listener.trainInfo(trainCode, parsedCode));
+                    Future<Train> train = this.listener.trainInfo(trainCode, parsedCode);
+                    this.view.update(train, index);
                 });
             }
-            this.view.update(futures);
 
             try {
                 Thread.sleep(MINUTE);
