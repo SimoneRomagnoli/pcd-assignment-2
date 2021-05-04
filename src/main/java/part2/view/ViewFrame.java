@@ -52,6 +52,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private JLabel trainLabel;
 	private JLabel trainCodeLabel;
 	private JTextField trainCode;
+	private JTextArea trainOutput;
 	private JLabel trainOriginLabel;
 	private JTextField trainOrigin;
 	private JButton trainInfoButton;
@@ -60,6 +61,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private JLabel stationLabel;
 	private JLabel stationCodeLabel;
 	private JTextField stationCode;
+	private JTextArea stationOutput;
 	private ButtonGroup stationArrivalsOrDepartures;
 	private JRadioButton stationArrivals;
 	private JRadioButton stationDepartures;
@@ -138,13 +140,19 @@ public class ViewFrame extends JFrame implements ActionListener {
 		}
 		if(this.trainInfoButton.equals(src)) {
 			final String trainCode = this.trainCode.getText();
-			final String stationCode = this.trainOrigin.getText();
-			this.trainInfo(trainCode, stationCode);
+			//final String stationCode = this.trainOrigin.getText();
+			Future<Train> train = this.trainInfo(trainCode);
+			train.onSuccess(status -> {
+				this.trainOutput.setText(status.toString());
+			});
 		}
 		if(this.stationInfoButton.equals(src)) {
 			final String stationCode = this.stationCode.getText();
 			final StationStatus.ArrivalsOrDepartures arrivalsOrDepartures = this.stationArrivals.isSelected() ? StationStatus.ArrivalsOrDepartures.ARRIVALS : StationStatus.ArrivalsOrDepartures.DEPARTURES;
-			this.stationInfo(stationCode, arrivalsOrDepartures);
+			Future<Station> station = this.stationInfo(stationCode, arrivalsOrDepartures);
+			station.onSuccess(status -> {
+				this.stationOutput.setText(status.toString());
+			});
 		}
 		if(this.detailsButton.equals(src)) {
 			List<TravelDetails> details = this.currentTravels.get(this.travelTable.getSelectedRow()).getDetails().get();
@@ -206,8 +214,8 @@ public class ViewFrame extends JFrame implements ActionListener {
 		return this.listener.searchTravel(origin, destination, date, time);
 	}
 
-	private Future<Train> trainInfo(String trainCode, String stationCode) {
-		return this.listener.trainInfo(trainCode, stationCode);
+	private Future<Train> trainInfo(String trainCode) {
+		return this.listener.trainInfo(trainCode);
 	}
 
 	private Future<Station> stationInfo(String stationCode, StationStatus.ArrivalsOrDepartures arrivalsOrDepartures) {
@@ -276,31 +284,38 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.add(this.trainCode);
 
 		//ORIGIN STATION
+		/*
 		this.trainOriginLabel = new JLabel("Origin: ");
 		this.trainOriginLabel.setBounds((int)(WIDTH*0.2), (int)(HEIGHT*0.4), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
 		this.trainOrigin = new JTextField(COLS);
 		this.trainOrigin.setBounds((int)(WIDTH*0.24), (int)(HEIGHT*0.4), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
 		this.add(this.trainOriginLabel);
 		this.add(this.trainOrigin);
+		*/
 
 		//GET INFO
 		this.trainInfoButton = new JButton("Get Info");
 		this.trainInfoButton.setBounds((int)(WIDTH*0.05), (int)(HEIGHT*0.475), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
 		this.trainInfoButton.addActionListener(this);
 		this.add(this.trainInfoButton);
+
+		//OUTPUT
+		this.trainOutput = new JTextArea();
+		this.trainOutput.setBounds((int)(WIDTH*0.2), (int)(HEIGHT*0.4), (int)(WIDTH*0.15), (int)(HEIGHT*0.2));
+		this.add(this.trainOutput);
 	}
 
 	private void createStationInfoInput() {
 		//TITLE
 		this.stationLabel = new JLabel("Get real time station info: ");
-		this.stationLabel.setBounds((int)(WIDTH*0.025), (int)(HEIGHT*0.65), (int)(WIDTH*0.3), (int)(HEIGHT*0.05));
+		this.stationLabel.setBounds((int)(WIDTH*0.025), (int)(HEIGHT*0.6), (int)(WIDTH*0.3), (int)(HEIGHT*0.05));
 		this.add(this.stationLabel);
 
 		//CODE
 		this.stationCodeLabel = new JLabel("Station: ");
-		this.stationCodeLabel.setBounds((int)(WIDTH*0.05), (int)(HEIGHT*0.7), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
+		this.stationCodeLabel.setBounds((int)(WIDTH*0.05), (int)(HEIGHT*0.65), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
 		this.stationCode = new JTextField(COLS);
-		this.stationCode.setBounds((int)(WIDTH*0.1), (int)(HEIGHT*0.7), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
+		this.stationCode.setBounds((int)(WIDTH*0.09), (int)(HEIGHT*0.65), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
 		this.add(this.stationCodeLabel);
 		this.add(this.stationCode);
 
@@ -309,10 +324,10 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.stationArrivals = new JRadioButton("Arrivi");
 		this.stationArrivals.setSelected(true);
 		this.stationArrivals.setActionCommand("Arrivi");
-		this.stationArrivals.setBounds((int)(WIDTH*0.225), (int)(HEIGHT*0.7), (int)(WIDTH*0.05), (int)(HEIGHT*0.05));
+		this.stationArrivals.setBounds((int)(WIDTH*0.09), (int)(HEIGHT*0.7), (int)(WIDTH*0.05), (int)(HEIGHT*0.05));
 		this.stationDepartures = new JRadioButton("Partenze");
 		this.stationDepartures.setSelected(false);
-		this.stationDepartures.setBounds((int)(WIDTH*0.275), (int)(HEIGHT*0.7), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
+		this.stationDepartures.setBounds((int)(WIDTH*0.14), (int)(HEIGHT*0.7), (int)(WIDTH*0.06), (int)(HEIGHT*0.05));
 		this.stationArrivalsOrDepartures.add(this.stationArrivals);
 		this.stationArrivalsOrDepartures.add(this.stationDepartures);
 		this.stationArrivals.addActionListener(this);
@@ -325,6 +340,11 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.stationInfoButton.setBounds((int)(WIDTH*0.05), (int)(HEIGHT*0.775), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
 		this.stationInfoButton.addActionListener(this);
 		this.add(this.stationInfoButton);
+
+		//OUTPUT
+		this.stationOutput = new JTextArea();
+		this.stationOutput.setBounds((int)(WIDTH*0.2), (int)(HEIGHT*0.65), (int)(WIDTH*0.15), (int)(HEIGHT*0.2));
+		this.add(this.stationOutput);
 	}
 
 	private void createTravelOutput() {
