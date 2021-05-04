@@ -17,6 +17,8 @@ public class Controller implements InputListener {
     private final Vertx vertx;
     private final TrainAPIWebClient client;
 
+    private MonitoringThread monitoringThread;
+
     public Controller(View view, Vertx vertx) {
         this.view = view;
         this.vertx = vertx;
@@ -40,10 +42,29 @@ public class Controller implements InputListener {
     }
 
     @Override
+    public Future<String> stationCode(String trainCode) {
+        Future<String> stationCode = this.client.getDepartureStationCode(trainCode);
+        //stationCode.onSuccess(System.out::println);
+        System.out.println("Departure station code request submitted");
+        return stationCode;
+    }
+
+    @Override
     public Future<Station> stationInfo(String stationCode, StationStatus.ArrivalsOrDepartures arrivalsOrDepartures) {
         Future<Station> station = this.client.getRealTimeStationInfo(stationCode, arrivalsOrDepartures);
         station.onSuccess(res -> System.out.println(res.toString()));
         System.out.println("Real time station info request submitted");
         return station;
+    }
+
+    @Override
+    public void startMonitoring(Travel travel) {
+        this.monitoringThread = new MonitoringThread(this, this.view, travel);
+        this.monitoringThread.start();
+    }
+
+    @Override
+    public void stopMonitoring() {
+        this.monitoringThread.end();
     }
 }

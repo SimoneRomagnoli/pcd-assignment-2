@@ -21,6 +21,7 @@ public class Requests {
     private static final int HTTP_PORT = 80;
     private static final String HOST_GET_REAL_TIME_INFO = "www.viaggiatreno.it";
     private static final String REQUEST_URI_GET_REAL_TIME_TRAIN_INFO = "/viaggiatrenomobile/resteasy/viaggiatreno/andamentoTreno/";
+    private static final String REQUEST_URI_GET_DEPARTURE_STATION_CODE = "/viaggiatrenonew/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/";
     private static final String REQUEST_URI_GET_REAL_TIME_STATION_INFO = "/viaggiatrenonew/resteasy/viaggiatreno/";
 
 
@@ -96,6 +97,30 @@ public class Requests {
                     .onSuccess(response -> {
                         System.out.println("Received response with status code " + response.statusCode());
                         result.complete(response.bodyAsJsonObject());
+                    })
+                    .onFailure(err -> {
+                        System.out.println("Something went wrong in GET request: " + err.getMessage());
+                        result.fail(err.getMessage());
+                    });
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        result.fail("Something went wrong in GET request: exception encountered");
+        return result;
+    }
+
+    public Promise<String> getRequestForDepartureStationCode(String trainCode) {
+        Promise<String> result = Promise.promise();
+        try {
+            this.client
+                    .get(HTTP_PORT, HOST_GET_REAL_TIME_INFO, REQUEST_URI_GET_DEPARTURE_STATION_CODE+trainCode)
+                    .send()
+                    .onSuccess(response -> {
+                        System.out.println("Received response with status code " + response.statusCode());
+                        //System.out.println("Station code: " + response.bodyAsString());
+                        //System.out.println("Index of - : " + response.bodyAsString().indexOf("-"));
+                        result.complete(response.bodyAsString());
                     })
                     .onFailure(err -> {
                         System.out.println("Something went wrong in GET request: " + err.getMessage());

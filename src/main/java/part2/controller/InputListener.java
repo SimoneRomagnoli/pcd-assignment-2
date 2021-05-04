@@ -14,5 +14,11 @@ public interface InputListener {
 
     Future<Train> trainInfo(String trainCode, String stationCode);
 
+    Future<String> stationCode(String trainCode);
+
     Future<Station> stationInfo(String stationCode, StationStatus.ArrivalsOrDepartures arrivalsOrDepartures);
+
+    void startMonitoring(Travel travel);
+
+    void stopMonitoring();
 }

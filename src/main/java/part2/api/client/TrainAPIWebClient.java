@@ -119,6 +119,23 @@ public class TrainAPIWebClient {
 
     /**
      *
+     * Method that retrieves the departure station code of a train.
+     *
+     * @param trainCode
+     * @return
+     */
+    public Future<String> getDepartureStationCode(String trainCode) {
+        try {
+            Promise<String> stringPromise = this.requests.getRequestForDepartureStationCode(trainCode);
+            return stringPromise.future();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     *
      * Method that retrieves real time information about a single station.
      *
      * @param stationName
