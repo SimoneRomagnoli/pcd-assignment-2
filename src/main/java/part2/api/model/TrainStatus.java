@@ -91,12 +91,14 @@ public class TrainStatus implements Train {
 
     @Override
     public String toString() {
-        return "[TRAIN STATUS]: Train number "+getTrainCode()+
-                " departure at "+getOrigin()+" at time "+getDepartureTime()+
-                " arrival at "+getDestination()+" at time "+getArrivalTime()+
-                " with current delay of "+getDelayMinutes()+" minutes.\n"+
-                "[STOPS]: Stops at "+getStops().toString()+".\n"+
-                "[POSITION]: Last detection at "+getLastDetection()+
-                " (currently "+(isInStation() ? "" : "not ")+"in station).\n";
+        return "Train number "+getTrainCode()+"\n"+
+                "Departure at "+getOrigin()+"\n"+
+                "At time "+getDepartureTime()+"\n"+
+                "Arrival at "+getDestination()+"\n"+
+                "At time "+getArrivalTime()+"\n"+
+                "With current delay of "+getDelayMinutes()+" minutes\n"+
+                //"[STOPS]: Stops at "+getStops().toString()+".\n"+
+                "Last detection at "+getLastDetection()+"\n"+
+                "Currently "+(isInStation() ? "" : "not ")+"in station.\n";
     }
 }

@@ -1,6 +1,7 @@
 package part2.controller;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import part2.api.client.TrainAPIWebClient;
 import part2.api.model.Station;
@@ -31,6 +32,21 @@ public class Controller implements InputListener {
         //travels.onSuccess(res -> res.forEach(t -> System.out.println(t.toString())) );
         System.out.println("Search travel request submitted");
         return travels;
+    }
+
+    @Override
+    public Future<Train> trainInfo(String trainCode) {
+        Promise<Train> promiseTrain = Promise.promise();
+        Future<String> futureStationCode = stationCode(trainCode);
+        futureStationCode.onSuccess(stationCode -> {
+            final int startIndex = stationCode.indexOf("|")+stationCode.indexOf("-")+1;
+            final String parsedCode = stationCode.substring(startIndex, startIndex+6);
+            Future<Train> futureTrain = this.client.getRealTimeTrainInfo(parsedCode, trainCode);
+            futureTrain.onSuccess(promiseTrain::complete);
+        });
+        //train.onSuccess(res -> System.out.println(res.toString()));
+        System.out.println("Real time train info request submitted");
+        return promiseTrain.future();
     }
 
     @Override

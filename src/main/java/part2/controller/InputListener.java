@@ -12,6 +12,8 @@ public interface InputListener {
 
     Future<List<Travel>> searchTravel(String from, String to, String date, int time);
 
+    Future<Train> trainInfo(String trainCode);
+
     Future<Train> trainInfo(String trainCode, String stationCode);
 
     Future<String> stationCode(String trainCode);
