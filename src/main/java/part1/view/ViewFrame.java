@@ -13,7 +13,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 /**
  * GUI component of the view.
@@ -23,6 +26,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 	private static final int WIDTH = (int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth()/1.4);
 	private static final int HEIGHT = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight()/2;
+	private static final Object[] OCCURRENCES_TABLE_COLUMNS = {"Word", "Occurrences"};
 
 	private JLabel dirLabel;
 	private JTextField pdfDirectory;
@@ -40,6 +44,9 @@ public class ViewFrame extends JFrame implements ActionListener {
 	private JButton startButton;
 	private JButton stopButton;
 	private DefaultCategoryDataset dataset =new DefaultCategoryDataset();
+
+	private JTable occurrencesTable;
+	private JScrollPane occurrencesTableContainer;
 	
 	private ArrayList<InputListener> listeners;
 
@@ -51,11 +58,12 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.createDirectoryInput();
 		this.createExcludedInput();
 		this.createLimitWordsInput();
-		this.createResultsOutput();
+		//this.createResultsOutput();
 		this.createElaboratedWordsOutput();
 		this.createStartButton();
 		this.createStopButton();
 		this.createChartPanel();
+		this.createTable();
 
 		this.setSize(WIDTH, HEIGHT);
 		setResizable(false);
@@ -64,7 +72,6 @@ public class ViewFrame extends JFrame implements ActionListener {
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
-	
 
 	public void addListener(InputListener l){
 		listeners.add(l);
@@ -128,19 +135,16 @@ public class ViewFrame extends JFrame implements ActionListener {
 			this.elaboratedWords.setText(""+words);
 		});
 		if(!occurrences.isEmpty()) {
-			String acc = "";
 			dataset.clear();
-			for (String word : occurrences.keySet().stream().sorted((a, b) -> occurrences.get(b) - occurrences.get(a)).collect(Collectors.toList())) {
-				acc += word + " - " + occurrences.get(word) + " times \n";
-				SwingUtilities.invokeLater(() -> {
-
-					this.dataset.addValue(occurrences.get(word), "row", word);
-				});
-			}
-			final String finalAcc = acc;
-
 			SwingUtilities.invokeLater(() -> {
-				this.results.setText(finalAcc);
+				DefaultTableModel model = (DefaultTableModel) this.occurrencesTable.getModel();
+				IntStream.generate(() -> 0).limit(model.getRowCount()).forEach(model::removeRow);
+				for (String word : occurrences.keySet().stream().sorted((a, b) -> occurrences.get(b) - occurrences.get(a)).collect(Collectors.toList())) {
+					this.dataset.addValue(occurrences.get(word), "row", word);
+					model.addRow(new String[] {
+							word, String.valueOf(occurrences.get(word))
+					});
+				}
 			});
 		}
 	}
@@ -199,6 +203,15 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.results.setBounds((int)(WIDTH*0.25), (int)(HEIGHT*0.1), (int)(WIDTH*0.2), (int)(HEIGHT*0.5));
 		this.add(this.resLabel);
 		this.add(this.results);
+	}
+
+	private void createTable() {
+		this.resLabel = new JLabel("Results:");
+		this.resLabel.setBounds((int)(WIDTH*0.25), (int)(HEIGHT*0.025), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
+		this.occurrencesTable = new JTable(new DefaultTableModel(OCCURRENCES_TABLE_COLUMNS, 0));
+		this.occurrencesTableContainer = new JScrollPane(this.occurrencesTable);
+		this.occurrencesTableContainer.setBounds((int)(WIDTH*0.25), (int)(HEIGHT*0.1), (int)(WIDTH*0.2), (int)(HEIGHT*0.5));
+		this.add(this.occurrencesTableContainer);
 	}
 
 	private void createElaboratedWordsOutput() {
