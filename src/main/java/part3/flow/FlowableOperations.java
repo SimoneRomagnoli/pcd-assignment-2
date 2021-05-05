@@ -1,4 +1,4 @@
-package part3.v2.model;
+package part3.v2.flow;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;

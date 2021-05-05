@@ -1,4 +1,4 @@
-package part3.v2;
+package part3.v2.view;
 
 import java.io.File;
 import java.io.IOException;

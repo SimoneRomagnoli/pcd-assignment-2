@@ -1,7 +1,6 @@
-package part3;
+package part3.v2;
 
-import part3.controller.Controller;
-import part3.view.View;
+import part3.v2.view.ViewListener;
 
 /**
 * Main of the program:
@@ -10,11 +9,8 @@ import part3.view.View;
 public class Main {
 	public static void main(String[] args) {
 		try {
-			View view = new View();
-			Controller controller = new Controller(view);
-
-			view.addListener(controller);
-			view.display();						
+			ViewListener viewListener = new ViewListener();
+			viewListener.display();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

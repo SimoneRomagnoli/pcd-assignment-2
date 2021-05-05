@@ -2,9 +2,8 @@ package part3.v2.view;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.disposables.Disposable;
-import part3.v2.InputListener;
-import part3.v2.model.Flow;
-import part3.v2.model.FlowableOperations;
+import part3.v2.flow.Flow;
+import part3.v2.flow.FlowableOperations;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,9 +14,9 @@ import java.util.Map;
  * Class representing the view part of the application.
  *
  */
-public class View implements InputListener {
+public class ViewListener implements InputListener {
 
-	private ViewFrame frame;
+	private View frame;
 	private Map<String, Integer> map;
 	private Map<String, Integer> prevTop;
 	private Flowable<Map<String, Integer>> flow;
@@ -26,8 +25,8 @@ public class View implements InputListener {
 	private FlowableOperations operations;
 
 
-	public View(){
-		frame = new ViewFrame();
+	public ViewListener(){
+		frame = new View();
 		this.frame.setListener(this);
 		this.map = new HashMap<>();
 		this.prevTop = new HashMap<>();
