@@ -144,10 +144,11 @@ public class ViewFrame extends JFrame implements ActionListener {
 			this.elaboratedWords.setText(""+words);
 		});
 		if(!occurrences.isEmpty()) {
-			dataset.clear();
+
 			SwingUtilities.invokeLater(() -> {
 				DefaultTableModel model = (DefaultTableModel) this.occurrencesTable.getModel();
 				IntStream.generate(() -> 0).limit(model.getRowCount()).forEach(model::removeRow);
+				dataset.clear();
 				for (String word : occurrences.keySet().stream().sorted((a, b) -> occurrences.get(b) - occurrences.get(a)).collect(Collectors.toList())) {
 					this.dataset.addValue(occurrences.get(word), "row", word);
 					model.addRow(new String[] {
