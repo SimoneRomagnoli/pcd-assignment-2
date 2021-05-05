@@ -17,7 +17,7 @@ import java.util.concurrent.ForkJoinPool;
  */
 public class Controller implements InputListener {
 
-	public static final int N_THREADS = Runtime.getRuntime().availableProcessors();
+	public static final int N_THREADS = 11;
 
 	private View view;
 	private Flag stopFlag;
