@@ -15,14 +15,13 @@ import java.util.concurrent.*;
  * Class representing the model of the program:
  * here is nested the entire logic of the program.
  */
-public class Model extends RecursiveTask<Void> {
+public class Model extends RecursiveAction {
 
     private final Queue<File> documents;
     private final List<String> ignoredWords;
 
 
     private final List<RecursiveAction> forks;
-    private final ForkJoinPool executor;
 
     private Flag flag;
     private ElaboratedWordsMonitor wordsMonitor;
@@ -33,7 +32,6 @@ public class Model extends RecursiveTask<Void> {
         this.flag = flag;
         this.documents = new ArrayDeque<>();
         this.forks = new LinkedList<>();
-        this.executor = executor;
 
         try {
             this.documents.addAll(Arrays.asList(Objects.requireNonNull(pdfDirectory.listFiles())));
@@ -50,7 +48,7 @@ public class Model extends RecursiveTask<Void> {
      * starts the main tasks via Executors.
      */
     @Override
-    public Void compute() {
+    public void compute() {
         final Long start = System.currentTimeMillis();
 
         //Execute Strip tasks
@@ -80,15 +78,5 @@ public class Model extends RecursiveTask<Void> {
         this.flag.set();
 
         System.out.println("Time elapsed: "+(System.currentTimeMillis()-start)+" ms.");
-
-        return null;
-    }
-
-    public OccurrencesMonitor getOccurrencesMonitor() {
-        return this.occurrencesMonitor;
-    }
-
-    public ElaboratedWordsMonitor getElaboratedWordsMonitor() {
-        return this.wordsMonitor;
     }
 }

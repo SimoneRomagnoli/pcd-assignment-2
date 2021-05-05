@@ -17,10 +17,7 @@ import java.util.concurrent.ForkJoinPool;
  */
 public class Controller implements InputListener {
 
-
 	public static final int N_THREADS = Runtime.getRuntime().availableProcessors();
-
-	private ForkJoinPool executor;
 
 	private View view;
 	private Flag stopFlag;
@@ -33,16 +30,16 @@ public class Controller implements InputListener {
 	public synchronized void started(File dir, File wordsFile, int limitWords) {
 		this.stopFlag.reset();
 
-		this.executor = new ForkJoinPool(N_THREADS);
+		final ForkJoinPool executor = new ForkJoinPool(N_THREADS);
 
 		final OccurrencesMonitor occurrencesMonitor = new OccurrencesMonitor(limitWords);
 		final ElaboratedWordsMonitor wordsMonitor = new ElaboratedWordsMonitor();
 
-		final Model model = new Model(this.stopFlag, dir, wordsFile, this.executor, occurrencesMonitor, wordsMonitor);
-		final Viewer viewer = new Viewer(this.view, this.stopFlag, this.executor, occurrencesMonitor, wordsMonitor);
+		final Model model = new Model(this.stopFlag, dir, wordsFile, executor, occurrencesMonitor, wordsMonitor);
+		final Viewer viewer = new Viewer(this.view, this.stopFlag, executor, occurrencesMonitor, wordsMonitor);
 
-		this.executor.submit(model);
-		this.executor.submit(viewer);
+		executor.submit(model);
+		executor.submit(viewer);
 	}
 
 	public synchronized void stopped() {

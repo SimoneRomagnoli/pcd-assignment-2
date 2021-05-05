@@ -26,28 +26,36 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 	private static final int WIDTH = (int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth()/1.4);
 	private static final int HEIGHT = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight()/2;
+
 	private static final Object[] OCCURRENCES_TABLE_COLUMNS = {"Word", "Occurrences"};
 
+	//DIRECTORY
 	private JLabel dirLabel;
 	private JTextField pdfDirectory;
 	private JButton pdfDirectoryChooser;
+
+	//EXCLUDED WORDS
 	private JLabel excLabel;
 	private JTextField excludeWords;
 	private JButton excludeWordsFileChooser;
+
+	//LIMIT WORDS
 	private JLabel limitLabel;
 	private JTextField limitOfWords;
+
+	//RESULTS
 	private JLabel resLabel;
-	private JTextArea results;
 	private JLabel wordsLabel;
 	private JTextField elaboratedWords;
 	private JPanel chartPanel;
-	private JButton startButton;
-	private JButton stopButton;
 	private DefaultCategoryDataset dataset =new DefaultCategoryDataset();
-
 	private JTable occurrencesTable;
 	private JScrollPane occurrencesTableContainer;
-	
+
+	//BUTTONS
+	private JButton startButton;
+	private JButton stopButton;
+
 	private ArrayList<InputListener> listeners;
 
 	public ViewFrame(){
@@ -58,7 +66,6 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.createDirectoryInput();
 		this.createExcludedInput();
 		this.createLimitWordsInput();
-		//this.createResultsOutput();
 		this.createElaboratedWordsOutput();
 		this.createStartButton();
 		this.createStopButton();
@@ -99,7 +106,10 @@ public class ViewFrame extends JFrame implements ActionListener {
 			File configFile = new File(excludeWords.getText());
 			int limitWords = Integer.parseInt(limitOfWords.getText());
 			this.notifyStarted(dir, configFile, limitWords);
-			//this.state.setText("Processing...");
+
+			DefaultTableModel model = (DefaultTableModel) this.occurrencesTable.getModel();
+			IntStream.generate(() -> 0).limit(model.getRowCount()).forEach(model::removeRow);
+			dataset.clear();
 
 			this.startButton.setEnabled(false);
 			this.stopButton.setEnabled(true);
@@ -108,7 +118,6 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 		} else if (src == stopButton) {
 			this.notifyStopped();
-			//this.state.setText("Stopped.");
 
 			this.startButton.setEnabled(true);
 			this.stopButton.setEnabled(false);
@@ -155,7 +164,6 @@ public class ViewFrame extends JFrame implements ActionListener {
 			this.stopButton.setEnabled(false);
 			this.pdfDirectoryChooser.setEnabled(true);
 			this.excludeWordsFileChooser.setEnabled(true);
-			//this.state.setText("Done.");
 		});
 
 	}
@@ -194,15 +202,6 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.limitOfWords.setText("5");
 		this.add(this.limitLabel);
 		this.add(this.limitOfWords);
-	}
-
-	private void createResultsOutput() {
-		this.resLabel = new JLabel("Results:");
-		this.resLabel.setBounds((int)(WIDTH*0.25), (int)(HEIGHT*0.025), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
-		this.results = new JTextArea("");
-		this.results.setBounds((int)(WIDTH*0.25), (int)(HEIGHT*0.1), (int)(WIDTH*0.2), (int)(HEIGHT*0.5));
-		this.add(this.resLabel);
-		this.add(this.results);
 	}
 
 	private void createTable() {
@@ -251,11 +250,6 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.chartPanel = new ChartPanel(barChart);
 		this.chartPanel.setBounds((int)(WIDTH*0.5), (int)(HEIGHT*0.1), (int)(WIDTH*0.45), (int)(HEIGHT*0.5));
 		this.add(chartPanel);
-	}
-
-	public void disableButtons() {
-		this.startButton.setEnabled(false);
-		this.stopButton.setEnabled(false);
 	}
 
 }

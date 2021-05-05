@@ -6,7 +6,6 @@ import part1.controller.Flag;
 
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.RecursiveTask;
 
 public class Viewer extends RecursiveAction {
 
