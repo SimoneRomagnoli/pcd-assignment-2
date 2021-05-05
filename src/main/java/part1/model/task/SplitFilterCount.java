@@ -7,10 +7,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
 
-public class SplitFilterCount extends RecursiveTask<Void> {
+public class SplitFilterCount extends RecursiveAction {
 
     private static final String REGEX = "[^a-zA-Z0-9]";
 
@@ -28,11 +29,10 @@ public class SplitFilterCount extends RecursiveTask<Void> {
     }
 
     @Override
-    public Void compute() {
+    public void compute() {
         String[] splitText = split(this.text);
         this.wordsMonitor.add(splitText.length);
         this.occurrencesMonitor.writeOccurrence(count(filter(splitText)));
-        return null;
     }
 
     private String[] split(String page) {

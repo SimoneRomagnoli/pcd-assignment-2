@@ -5,9 +5,10 @@ import part1.model.OccurrencesMonitor;
 import part1.controller.Flag;
 
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 
-public class Viewer extends RecursiveTask<Void> {
+public class Viewer extends RecursiveAction {
 
 	private final ForkJoinPool executor;
 
@@ -25,7 +26,7 @@ public class Viewer extends RecursiveTask<Void> {
 	}
 
 	@Override
-	public Void compute() {
+	public void compute() {
 		while (!done.isSet()) {
 			try {
 				view.update(this.wordsMonitor.getElaboratedWords(), this.occurrencesMonitor.getOccurrences());
@@ -37,6 +38,5 @@ public class Viewer extends RecursiveTask<Void> {
 		this.executor.shutdownNow();
 		view.update(this.wordsMonitor.getElaboratedWords(), this.occurrencesMonitor.getOccurrences());
 		this.view.done();
-		return null;
 	}
 }

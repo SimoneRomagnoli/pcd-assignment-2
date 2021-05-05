@@ -21,7 +21,7 @@ public class Model extends RecursiveTask<Void> {
     private final List<String> ignoredWords;
 
 
-    private final List<ForkJoinTask<Void>> tasks;
+    private final List<RecursiveAction> forks;
     private final ForkJoinPool executor;
 
     private Flag flag;
@@ -32,7 +32,7 @@ public class Model extends RecursiveTask<Void> {
         this.ignoredWords = new ArrayList<>();
         this.flag = flag;
         this.documents = new ArrayDeque<>();
-        this.tasks = new LinkedList<>();
+        this.forks = new LinkedList<>();
         this.executor = executor;
 
         try {
@@ -62,8 +62,9 @@ public class Model extends RecursiveTask<Void> {
                 if (!ap.canExtractContent()) {
                     throw new IOException("You do not have permission to extract text");
                 } else {
-                    ForkJoinTask<Void> strip = new Strip(doc, this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor).fork();
-                    this.tasks.add(strip);
+                    RecursiveAction strip = new Strip(doc, this.ignoredWords, this.occurrencesMonitor, this.wordsMonitor);
+                    this.forks.add(strip);
+                    strip.fork();
                     System.out.println("Submitted file: " + f.getName());
                 }
             } catch (Exception e) {
@@ -72,8 +73,8 @@ public class Model extends RecursiveTask<Void> {
         }
 
         //Wait strip join before shutting down
-        for(ForkJoinTask<Void> task: tasks) {
-            task.join();
+        for(RecursiveAction fork: forks) {
+            fork.join();
         }
 
         this.flag.set();
