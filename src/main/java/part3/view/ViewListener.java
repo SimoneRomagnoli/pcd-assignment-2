@@ -11,44 +11,41 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * View input listener.
+ * View input listener and subscriber of the flow.
  *
  */
 public class ViewListener implements InputListener {
 
-	private View view;
+	private final View view;
 	private Map<String, Integer> map;
 	private Map<String, Integer> prevTop;
-	private Flowable<Map<String, Integer>> flow;
 	private int elaboratedWords;
 	private Disposable disposable;
-	private FlowableOperations operations;
 
 	public ViewListener(){
 		view = new View();
 		this.view.setListener(this);
-		this.map = new HashMap<>();
-		this.prevTop = new HashMap<>();
 	}
 
 	@Override
-	public void start(File dir, File wordsFile, int limitWords) {
-		final Long start = System.currentTimeMillis();
+	public void start(File dir, File wordsFile, int limitWords){
+		final long start = System.currentTimeMillis();
 		this.map = new HashMap<>();
 		this.prevTop = new HashMap<>();
 		try {
-			this.operations = new FlowableOperations(wordsFile, limitWords);
+			FlowableOperations.setArgs(wordsFile, limitWords);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		this.flow = new Flow(dir).getMapsFlowable();
+		Flowable<Map<String, Integer>> flow = new Flow(dir).getMapsFlowable();
+
 		this.disposable = flow.subscribe(
 				localMap -> {
 					localMap.forEach((s, c)-> {
 						map.merge(s, c, Integer::sum);
 						this.elaboratedWords = map.values().stream().reduce(Integer::sum).get();
-						updateGuiIfNecessary();
 					});
+					updateGuiIfNecessary();
 				}, error -> {
 						FlowableOperations.log("an error occurred" + error.getMessage());
 				}, () -> {

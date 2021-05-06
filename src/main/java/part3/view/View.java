@@ -116,7 +116,7 @@ public class View extends JFrame implements ActionListener {
 
 	}
 
-	private void notifyStarted(File dir, File wordsFile, int limitWords) {
+	private void notifyStarted(File dir, File wordsFile, int limitWords){
 		this.listener.start(dir,wordsFile,limitWords);
 	}
 	
@@ -143,7 +143,6 @@ public class View extends JFrame implements ActionListener {
 			});
 		}
 	}
-
 	
 	public void done() {
 		SwingUtilities.invokeLater(() -> {

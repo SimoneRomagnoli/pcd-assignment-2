@@ -22,8 +22,7 @@ public class FlowableOperations {
     private static int limitWords;
 
     public FlowableOperations(File wordsFile, Integer limitWords) throws IOException {
-        ignoredWords.addAll(Files.readAllLines(wordsFile.toPath()));
-        this.limitWords = limitWords;
+
     }
 
     public static List<String> loadAndGetChunks(File f ) throws IOException {
@@ -78,5 +77,10 @@ public class FlowableOperations {
 
     public static void log(String msg) {
         System.out.println("[" + Thread.currentThread().getName() + "] " + msg);
+    }
+
+    public static void setArgs(File wordsFile, int limitWords) throws IOException {
+        ignoredWords.addAll(Files.readAllLines(wordsFile.toPath()));
+        FlowableOperations.limitWords = limitWords;
     }
 }
