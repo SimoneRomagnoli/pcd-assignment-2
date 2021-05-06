@@ -1,6 +1,6 @@
-package part3.v2;
+package part3;
 
-import part3.v2.view.ViewListener;
+import part3.view.ViewListener;
 
 /**
 * Main of the program:

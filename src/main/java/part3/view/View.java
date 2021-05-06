@@ -1,4 +1,4 @@
-package part3.v2.view;
+package part3.view;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -95,8 +95,6 @@ public class View extends JFrame implements ActionListener {
 			File dir = new File(pdfDirectory.getText());
 			File configFile = new File(excludeWords.getText());
 			int limitWords = Integer.parseInt(limitOfWords.getText());
-			SwingUtilities.invokeLater(
-					()->this.results.setText(""));
 			try {
 				this.notifyStarted(dir, configFile, limitWords);
 			} catch (IOException e) {
@@ -129,23 +127,27 @@ public class View extends JFrame implements ActionListener {
 	private void notifyStopped(){
 		this.listener.stop();
 	}
-	
-	public void update(final long words, final Map<String, Integer> occurrences) {
+
+	public void update(final int words, final Map<String, Integer> occurrences) {
 		SwingUtilities.invokeLater(() -> {
 			this.elaboratedWords.setText(""+words);
 		});
 		if(!occurrences.isEmpty()) {
-			dataset.clear();
+
+			SwingUtilities.invokeLater(() -> {
 				DefaultTableModel model = (DefaultTableModel) this.occurrencesTable.getModel();
 				IntStream.generate(() -> 0).limit(model.getRowCount()).forEach(model::removeRow);
+				dataset.clear();
 				for (String word : occurrences.keySet().stream().sorted((a, b) -> occurrences.get(b) - occurrences.get(a)).collect(Collectors.toList())) {
 					this.dataset.addValue(occurrences.get(word), "row", word);
 					model.addRow(new String[] {
 							word, String.valueOf(occurrences.get(word))
 					});
 				}
+			});
 		}
 	}
+
 	
 	public void done() {
 		SwingUtilities.invokeLater(() -> {

@@ -1,9 +1,9 @@
-package part3.v2.view;
+package part3.view;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.disposables.Disposable;
-import part3.v2.flow.Flow;
-import part3.v2.flow.FlowableOperations;
+import part3.flow.Flow;
+import part3.flow.FlowableOperations;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class ViewListener implements InputListener {
 
-	private View frame;
+	private View view;
 	private Map<String, Integer> map;
 	private Map<String, Integer> prevTop;
 	private Flowable<Map<String, Integer>> flow;
@@ -26,36 +26,42 @@ public class ViewListener implements InputListener {
 
 
 	public ViewListener(){
-		frame = new View();
-		this.frame.setListener(this);
+		view = new View();
+		this.view.setListener(this);
 		this.map = new HashMap<>();
 		this.prevTop = new HashMap<>();
 	}
 
 	@Override
 	public void start(File dir, File wordsFile, int limitWords) throws IOException {
+		final Long start = System.currentTimeMillis();
 		this.map = new HashMap<>();
 		this.prevTop = new HashMap<>();
 		this.operations = new FlowableOperations(wordsFile, limitWords);
 		this.flow = new Flow(dir).getMapsFlowable();
 		this.disposable = flow.subscribe(
 				localMap -> {
-					FlowableOperations.log("creating the map");
 					localMap.forEach((s, c)-> {
 						map.merge(s, c, Integer::sum);
 						this.elaboratedWords = map.values().stream().reduce(Integer::sum).get();
-						if(!FlowableOperations.getTop(map).equals(prevTop)){
-							prevTop = FlowableOperations.getTop(map);
-							frame.update(elaboratedWords, prevTop);
-						}
+						updateGuiIfNecessary();
+
 					});
 				}, error -> {
-					part3.model.FlowableOperations.log("an error occurred" + error.getMessage());
+						FlowableOperations.log("an error occurred" + error.getMessage());
 				},
-				() -> {
-					FlowableOperations.log("DONE");
-					frame.done();
+					() -> {
+						FlowableOperations.log("DONE");
+						view.done();
+						System.out.println("Time elapsed: "+(System.currentTimeMillis()-start)+" ms.");
 				});
+	}
+
+	private void updateGuiIfNecessary(){
+		if(!FlowableOperations.getTop(map).equals(prevTop)){
+			prevTop = FlowableOperations.getTop(map);
+			view.update(elaboratedWords, prevTop);
+		}
 	}
 
 	@Override
@@ -65,7 +71,7 @@ public class ViewListener implements InputListener {
 
 	public void display() {
         javax.swing.SwingUtilities.invokeLater(() -> {
-        	frame.setVisible(true);
+        	view.setVisible(true);
         });
     }
 }
