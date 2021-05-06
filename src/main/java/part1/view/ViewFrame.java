@@ -110,6 +110,7 @@ public class ViewFrame extends JFrame implements ActionListener {
 			DefaultTableModel model = (DefaultTableModel) this.occurrencesTable.getModel();
 			IntStream.generate(() -> 0).limit(model.getRowCount()).forEach(model::removeRow);
 			dataset.clear();
+			this.elaboratedWords.setText("0");
 
 			this.startButton.setEnabled(false);
 			this.stopButton.setEnabled(true);
