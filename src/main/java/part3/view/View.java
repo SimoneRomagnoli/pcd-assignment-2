@@ -36,7 +36,6 @@ public class View extends JFrame implements ActionListener {
 	private JLabel limitLabel;
 	private JTextField limitOfWords;
 	private JLabel resLabel;
-	private JTextArea results;
 	private JLabel wordsLabel;
 	private JTextField elaboratedWords;
 	private JPanel chartPanel;
@@ -91,26 +90,23 @@ public class View extends JFrame implements ActionListener {
 		    if(returnVal == JFileChooser.APPROVE_OPTION) {
 		        excludeWords.setText(wordsToDiscardFileChooser.getSelectedFile().getAbsolutePath());
 		     }
-		} else if (src == startButton) {
+		} else if (this.startButton.equals(src)) {
 			File dir = new File(pdfDirectory.getText());
 			File configFile = new File(excludeWords.getText());
 			int limitWords = Integer.parseInt(limitOfWords.getText());
-			try {
-				this.notifyStarted(dir, configFile, limitWords);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			//this.state.setText("Processing...");
+			this.notifyStarted(dir, configFile, limitWords);
+			DefaultTableModel model = (DefaultTableModel) this.occurrencesTable.getModel();
+			IntStream.generate(() -> 0).limit(model.getRowCount()).forEach(model::removeRow);
+			dataset.clear();
+			this.elaboratedWords.setText("0");
 
 			this.startButton.setEnabled(false);
 			this.stopButton.setEnabled(true);
 			pdfDirectoryChooser.setEnabled(false);
 			excludeWordsFileChooser.setEnabled(false);
 
-		} else if (src == stopButton) {
+		} else if (this.stopButton.equals(src)) {
 			this.notifyStopped();
-			//this.state.setText("Stopped.");
 
 			this.startButton.setEnabled(true);
 			this.stopButton.setEnabled(false);
@@ -120,7 +116,7 @@ public class View extends JFrame implements ActionListener {
 
 	}
 
-	private void notifyStarted(File dir, File wordsFile, int limitWords) throws IOException {
+	private void notifyStarted(File dir, File wordsFile, int limitWords) {
 		this.listener.start(dir,wordsFile,limitWords);
 	}
 	
@@ -155,7 +151,6 @@ public class View extends JFrame implements ActionListener {
 			this.stopButton.setEnabled(false);
 			this.pdfDirectoryChooser.setEnabled(true);
 			this.excludeWordsFileChooser.setEnabled(true);
-			//this.state.setText("Done.");
 		});
 
 	}
@@ -165,7 +160,6 @@ public class View extends JFrame implements ActionListener {
 		this.dirLabel.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.025), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
 		this.pdfDirectory = new JTextField(10);
 		this.pdfDirectory.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.1), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
-		this.pdfDirectory.setText("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/resMed");
 		this.pdfDirectoryChooser = new JButton("Find directory");
 		this.pdfDirectoryChooser.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.225), (int)(HEIGHT*0.4), (int)(HEIGHT*0.05));
 		this.pdfDirectoryChooser.addActionListener(this);
@@ -179,7 +173,6 @@ public class View extends JFrame implements ActionListener {
 		this.excLabel.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.325), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
 		this.excludeWords = new JTextField(10);
 		this.excludeWords.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.4), (int)(WIDTH*0.2), (int)(HEIGHT*0.1));
-		this.excludeWords.setText("/home/mr/Documents/Magistrale/pcd/Assignments/pcd-assignment-2/ignoredWords.txt");
 		this.excludeWordsFileChooser = new JButton("Find file");
 		this.excludeWordsFileChooser.setBounds((int)(HEIGHT*0.05), (int)(HEIGHT*0.525), (int)(HEIGHT*0.4), (int)(HEIGHT*0.05));
 		this.excludeWordsFileChooser.addActionListener(this);
@@ -235,11 +228,6 @@ public class View extends JFrame implements ActionListener {
 		this.chartPanel = new ChartPanel(barChart);
 		this.chartPanel.setBounds((int)(WIDTH*0.5), (int)(HEIGHT*0.1), (int)(WIDTH*0.45), (int)(HEIGHT*0.5));
 		this.add(chartPanel);
-	}
-
-	public void disableButtons() {
-		this.startButton.setEnabled(false);
-		this.stopButton.setEnabled(false);
 	}
 
 	private void createTable() {

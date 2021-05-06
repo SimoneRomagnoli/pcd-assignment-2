@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class representing the view part of the application.
+ * View input listener.
  *
  */
 public class ViewListener implements InputListener {
@@ -24,7 +24,6 @@ public class ViewListener implements InputListener {
 	private Disposable disposable;
 	private FlowableOperations operations;
 
-
 	public ViewListener(){
 		view = new View();
 		this.view.setListener(this);
@@ -33,11 +32,15 @@ public class ViewListener implements InputListener {
 	}
 
 	@Override
-	public void start(File dir, File wordsFile, int limitWords) throws IOException {
+	public void start(File dir, File wordsFile, int limitWords) {
 		final Long start = System.currentTimeMillis();
 		this.map = new HashMap<>();
 		this.prevTop = new HashMap<>();
-		this.operations = new FlowableOperations(wordsFile, limitWords);
+		try {
+			this.operations = new FlowableOperations(wordsFile, limitWords);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		this.flow = new Flow(dir).getMapsFlowable();
 		this.disposable = flow.subscribe(
 				localMap -> {
@@ -45,12 +48,10 @@ public class ViewListener implements InputListener {
 						map.merge(s, c, Integer::sum);
 						this.elaboratedWords = map.values().stream().reduce(Integer::sum).get();
 						updateGuiIfNecessary();
-
 					});
 				}, error -> {
 						FlowableOperations.log("an error occurred" + error.getMessage());
-				},
-					() -> {
+				}, () -> {
 						FlowableOperations.log("DONE");
 						view.done();
 						System.out.println("Time elapsed: "+(System.currentTimeMillis()-start)+" ms.");

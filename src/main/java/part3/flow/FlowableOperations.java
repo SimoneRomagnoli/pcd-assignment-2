@@ -10,10 +10,14 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Static methods to transform data streams.
+ *
+ */
 public class FlowableOperations {
 
     private static final int FIRST_PAGE = 1;
-    final static String REGEX = "[^a-zA-Z0-9]";
+    private static final String REGEX = "[^a-zA-Z0-9]";
     private static final List<String> ignoredWords = new ArrayList<>();
     private static int limitWords;
 
@@ -22,11 +26,7 @@ public class FlowableOperations {
         this.limitWords = limitWords;
     }
 
-    public static void log(String msg) {
-        System.out.println("[" + Thread.currentThread().getName() + "] " + msg);
-    }
-
-    public static List<String> loadAndGetChuncks(File f ) throws IOException {
+    public static List<String> loadAndGetChunks(File f ) throws IOException {
         List<String> chunks = new ArrayList<>();
         System.out.println("Stripping in chunk" + f.getName());
         PDDocument doc = PDDocument.load(f);
@@ -34,19 +34,14 @@ public class FlowableOperations {
         if (!ap.canExtractContent()) {
             throw new IOException("You do not have permission to extract text");
         } else {
-
             final PDFTextStripper stripper = new PDFTextStripper();
             int nPages = doc.getNumberOfPages();
-            if(nPages==1){
-                chunks.add(stripper.getText(doc));
-            }
-            else{
-                for (int i = FIRST_PAGE; i <= nPages; i++) {
-                    stripper.setStartPage(i);
-                    stripper.setEndPage(i);
-                    String chunk =  stripper.getText(doc);
-                    chunks.add(chunk);
-                }
+
+            for (int i = FIRST_PAGE; i <= nPages; i++) {
+                stripper.setStartPage(i);
+                stripper.setEndPage(i);
+                String chunk =  stripper.getText(doc);
+                chunks.add(chunk);
             }
             doc.close();
             return chunks;
@@ -73,7 +68,6 @@ public class FlowableOperations {
         return occurrences;
     }
 
-
     public static Map<String, Integer> getTop(Map<String, Integer> map){
         return map.keySet()
                 .stream()
@@ -82,5 +76,7 @@ public class FlowableOperations {
                 .collect(Collectors.toMap(k -> k, map::get));
     }
 
-
+    public static void log(String msg) {
+        System.out.println("[" + Thread.currentThread().getName() + "] " + msg);
+    }
 }
