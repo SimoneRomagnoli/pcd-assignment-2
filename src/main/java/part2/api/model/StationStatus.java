@@ -42,7 +42,7 @@ public class StationStatus implements Station {
 
     @Override
     public String toString() {
-        return (isArrivalsStatus() ? "[ARRIVI]: " : "[PARTENZE]: ")+getNumberOfTrains();
+        return (isArrivalsStatus() ? "[ARRIVALS]: " : "[DEPARTURES]: ")+getNumberOfTrains();
     }
 
 }

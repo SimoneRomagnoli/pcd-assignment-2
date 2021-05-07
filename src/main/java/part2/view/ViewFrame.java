@@ -283,16 +283,6 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.add(this.trainCodeLabel);
 		this.add(this.trainCode);
 
-		//ORIGIN STATION
-		/*
-		this.trainOriginLabel = new JLabel("Origin: ");
-		this.trainOriginLabel.setBounds((int)(WIDTH*0.2), (int)(HEIGHT*0.4), (int)(WIDTH*0.2), (int)(HEIGHT*0.05));
-		this.trainOrigin = new JTextField(COLS);
-		this.trainOrigin.setBounds((int)(WIDTH*0.24), (int)(HEIGHT*0.4), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
-		this.add(this.trainOriginLabel);
-		this.add(this.trainOrigin);
-		*/
-
 		//GET INFO
 		this.trainInfoButton = new JButton("Get Info");
 		this.trainInfoButton.setBounds((int)(WIDTH*0.05), (int)(HEIGHT*0.475), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
@@ -315,19 +305,19 @@ public class ViewFrame extends JFrame implements ActionListener {
 		this.stationCodeLabel = new JLabel("Station: ");
 		this.stationCodeLabel.setBounds((int)(WIDTH*0.05), (int)(HEIGHT*0.65), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
 		this.stationCode = new JTextField(COLS);
-		this.stationCode.setBounds((int)(WIDTH*0.09), (int)(HEIGHT*0.65), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
+		this.stationCode.setBounds((int)(WIDTH*0.085), (int)(HEIGHT*0.65), (int)(WIDTH*0.1), (int)(HEIGHT*0.05));
 		this.add(this.stationCodeLabel);
 		this.add(this.stationCode);
 
 		//ARRIVALS OR DEPARTURES
 		this.stationArrivalsOrDepartures = new ButtonGroup();
-		this.stationArrivals = new JRadioButton("Arrivi");
+		this.stationArrivals = new JRadioButton("Arrivals");
 		this.stationArrivals.setSelected(true);
 		this.stationArrivals.setActionCommand("Arrivi");
-		this.stationArrivals.setBounds((int)(WIDTH*0.09), (int)(HEIGHT*0.7), (int)(WIDTH*0.05), (int)(HEIGHT*0.05));
-		this.stationDepartures = new JRadioButton("Partenze");
+		this.stationArrivals.setBounds((int)(WIDTH*0.085), (int)(HEIGHT*0.7), (int)(WIDTH*0.05), (int)(HEIGHT*0.05));
+		this.stationDepartures = new JRadioButton("Departures");
 		this.stationDepartures.setSelected(false);
-		this.stationDepartures.setBounds((int)(WIDTH*0.14), (int)(HEIGHT*0.7), (int)(WIDTH*0.06), (int)(HEIGHT*0.05));
+		this.stationDepartures.setBounds((int)(WIDTH*0.135), (int)(HEIGHT*0.7), (int)(WIDTH*0.065), (int)(HEIGHT*0.05));
 		this.stationArrivalsOrDepartures.add(this.stationArrivals);
 		this.stationArrivalsOrDepartures.add(this.stationDepartures);
 		this.stationArrivals.addActionListener(this);
