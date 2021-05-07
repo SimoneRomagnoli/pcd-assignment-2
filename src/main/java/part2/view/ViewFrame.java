@@ -196,9 +196,11 @@ public class ViewFrame extends JFrame implements ActionListener {
 
 	public void updateMonitoring(Future<Train> futureTrain, int row) {
 		futureTrain.onSuccess(train -> {
-			DefaultTableModel model = (DefaultTableModel) this.monitorTable.getModel();
-			model.setValueAt(train.getDelayMinutes()+" minutes", row, DELAY_COLUMN);
-			model.setValueAt(train.getLastDetection(), row, LAST_DETECTION_COLUMN);
+			SwingUtilities.invokeLater(() -> {
+				DefaultTableModel model = (DefaultTableModel) this.monitorTable.getModel();
+				model.setValueAt(train.getDelayMinutes()+" minutes", row, DELAY_COLUMN);
+				model.setValueAt(train.getLastDetection(), row, LAST_DETECTION_COLUMN);
+			});
 		});
 	}
 
