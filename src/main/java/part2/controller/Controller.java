@@ -18,7 +18,7 @@ public class Controller implements InputListener {
     private final Vertx vertx;
     private final TrainAPIWebClient client;
 
-    private MonitoringThread monitoringThread;
+    private MonitoringVerticle monitoringVerticle;
 
     public Controller(View view, Vertx vertx) {
         this.view = view;
@@ -75,12 +75,12 @@ public class Controller implements InputListener {
 
     @Override
     public void startMonitoring(Travel travel) {
-        this.monitoringThread = new MonitoringThread(this, this.view, travel);
-        this.monitoringThread.start();
+        this.monitoringVerticle = new MonitoringVerticle(this, this.view, travel);
+        this.vertx.deployVerticle(this.monitoringVerticle);
     }
 
     @Override
     public void stopMonitoring() {
-        this.monitoringThread.end();
+        this.monitoringVerticle.stop();
     }
 }
